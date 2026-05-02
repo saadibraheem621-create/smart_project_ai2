@@ -30,6 +30,7 @@ CATEGORIES = [
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(120), nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
     whatsapp = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
@@ -88,17 +89,22 @@ def index():
 def register():
     if request.method == "POST":
         full_name = request.form.get("full_name")
+        username = request.form.get("username")
         whatsapp = request.form.get("whatsapp")
         email = request.form.get("email")
         password = request.form.get("password")
 
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
+        if User.query.filter_by(email=email).first():
             flash("Email already registered")
+            return redirect(url_for("register"))
+
+        if User.query.filter_by(username=username).first():
+            flash("Username already registered")
             return redirect(url_for("register"))
 
         user = User(
             full_name=full_name,
+            username=username,
             whatsapp=whatsapp,
             email=email,
             password_hash=generate_password_hash(password)
@@ -116,13 +122,15 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form.get("email")
+        login_input = request.form.get("email")
         password = request.form.get("password")
 
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter(
+            (User.email == login_input) | (User.username == login_input)
+        ).first()
 
         if not user or not check_password_hash(user.password_hash, password):
-            flash("Wrong email or password")
+            flash("Wrong email/username or password")
             return redirect(url_for("login"))
 
         session["user_id"] = user.id
@@ -231,8 +239,8 @@ def show_my_product(product_id):
     if not user:
         return redirect(url_for("login"))
 
-
     product = Product.query.get_or_404(product_id)
+
     if product.user_id == user.id:
         product.is_active = True
         db.session.commit()
@@ -244,9 +252,11 @@ def show_my_product(product_id):
 def admin_login():
     if request.method == "POST":
         password = request.form.get("password")
+
         if password == ADMIN_PASSWORD:
             session["admin"] = True
             return redirect(url_for("admin"))
+
         flash("Wrong admin password")
 
     return render_template("admin_login.html", user=current_user())

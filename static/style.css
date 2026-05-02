@@ -172,6 +172,11 @@ button,
     color: #64748b;
 }
 
+footer {
+    text-align: center;
+    padding: 25px;
+}
+
 .admin-header {
     text-align: center;
     padding: 25px;

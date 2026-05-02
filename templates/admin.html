@@ -18,6 +18,7 @@
 <table>
     <tr>
         <th>Name</th>
+        <th>Username</th>
         <th>Email</th>
         <th>WhatsApp</th>
         <th>Products</th>
@@ -26,6 +27,7 @@
     {% for u in users %}
     <tr>
         <td>{{ u.full_name }}</td>
+        <td>{{ u.username }}</td>
         <td>{{ u.email }}</td>
         <td>{{ u.whatsapp }}</td>
         <td>{{ u.products|length }}</td>
