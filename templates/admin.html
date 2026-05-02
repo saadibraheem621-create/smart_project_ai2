@@ -1,57 +1,66 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة الإدارة</title>
+    <title>Admin - Zenvy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
 <div class="admin-header">
-    <h1>⚙️ لوحة الإدارة</h1>
-    <a class="btn" href="/">الرئيسية</a>
-    <a class="btn danger" href="/logout">خروج</a>
+    <h1>Zenvy Admin</h1>
+    <a class="btn" href="/">Home</a>
+    <a class="btn danger" href="/logout">Logout</a>
 </div>
+
+<h2 class="section-title">Users</h2>
 
 <table>
     <tr>
-        <th>الصورة</th>
-        <th>المنتج</th>
-        <th>البائع</th>
-        <th>واتساب</th>
-        <th>السعر</th>
-        <th>الحالة</th>
-        <th>إجراءات</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>WhatsApp</th>
+        <th>Products</th>
+    </tr>
+
+    {% for u in users %}
+    <tr>
+        <td>{{ u.full_name }}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.whatsapp }}</td>
+        <td>{{ u.products|length }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h2 class="section-title">Products</h2>
+
+<table>
+    <tr>
+        <th>Image</th>
+        <th>Product</th>
+        <th>Seller</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Action</th>
     </tr>
 
     {% for p in products %}
     <tr>
         <td>
             {% if p.image_name %}
-            <img class="admin-img" src="/static/uploads/{{ p.image_name }}">
+                <img class="admin-img" src="/static/uploads/{{ p.image_name }}">
             {% else %}
-            لا توجد
+                No image
             {% endif %}
         </td>
         <td>{{ p.title }}</td>
-        <td>{{ p.seller_name }}</td>
-        <td>{{ p.whatsapp }}</td>
+        <td>{{ p.seller.full_name }}</td>
         <td>{{ p.price }}</td>
+        <td>{{ "Visible" if p.is_active else "Hidden" }}</td>
         <td>
-            {% if p.is_active %}
-            ظاهر
-            {% else %}
-            مخفي
-            {% endif %}
-        </td>
-        <td>
-            {% if p.is_active %}
-            <a href="/hide/{{ p.id }}">إخفاء</a>
-            {% else %}
-            <a href="/show/{{ p.id }}">إظهار</a>
-            {% endif %}
-            |
-            <a class="delete" href="/delete/{{ p.id }}" onclick="return confirm('هل أنت متأكد من الحذف؟')">حذف</a>
+            <a class="delete" href="/admin/delete-product/{{ p.id }}"
+               onclick="return confirm('Delete product?')">Delete</a>
         </td>
     </tr>
     {% endfor %}

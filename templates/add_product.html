@@ -1,40 +1,43 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>إضافة منتج</title>
+    <title>Add Product - Zenvy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
+<nav class="nav">
+    <h2>Zenvy</h2>
+    <div>
+        <a href="/">Home</a>
+        <a href="/my-products">My Products</a>
+        <a href="/logout">Logout</a>
+    </div>
+</nav>
+
 <div class="form-box">
-    <h2>➕ انشر منتجك في السوق</h2>
+    <h2>Add Product</h2>
 
     <form method="POST" enctype="multipart/form-data">
-        <input name="seller_name" placeholder="اسم البائع" required>
-
-        <input name="whatsapp" placeholder="رقم واتساب مثال: 9647700000000" required>
-
-        <input name="title" placeholder="اسم المنتج" required>
-
-        <input name="price" placeholder="السعر بالدينار" required>
+        <input name="title" placeholder="Product title" required>
+        <input name="price" placeholder="Price" required>
+        <input name="city" placeholder="City" required>
 
         <select name="category" required>
-            <option value="">اختر التصنيف</option>
+            <option value="">Choose category</option>
             {% for c in categories %}
             <option>{{ c }}</option>
             {% endfor %}
         </select>
 
-        <textarea name="description" placeholder="وصف المنتج" rows="5"></textarea>
+        <textarea name="description" placeholder="Description" rows="5"></textarea>
 
-        <label>صورة المنتج</label>
+        <label>Product Image</label>
         <input type="file" name="image">
 
-        <button type="submit">نشر المنتج</button>
+        <button type="submit">Publish</button>
     </form>
-
-    <a href="/">رجوع للرئيسية</a>
 </div>
 
 </body>

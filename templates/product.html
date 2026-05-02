@@ -1,37 +1,49 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ product.title }}</title>
+    <title>{{ product.title }} - Zenvy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
+<nav class="nav">
+    <h2>Zenvy</h2>
+    <div>
+        <a href="/">Home</a>
+        {% if user %}
+            <a href="/my-products">My Products</a>
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/login">Login</a>
+        {% endif %}
+    </div>
+</nav>
+
 <div class="product-page">
 
     {% if product.image_name %}
-    <img src="/static/uploads/{{ product.image_name }}">
+        <img src="/static/uploads/{{ product.image_name }}">
     {% else %}
-    <div class="no-image big">لا توجد صورة</div>
+        <div class="no-image big">No Image</div>
     {% endif %}
 
     <h1>{{ product.title }}</h1>
-
     <span class="category">{{ product.category }}</span>
 
-    <h2>{{ product.price }} د.ع</h2>
-
+    <h2>{{ product.price }}</h2>
+    <p>📍 {{ product.city }}</p>
     <p class="desc">{{ product.description }}</p>
 
-    <p>👤 البائع: {{ product.seller_name }}</p>
+    <p>Seller: {{ product.seller.full_name }}</p>
 
     <a class="whatsapp" target="_blank"
-       href="https://wa.me/{{ product.whatsapp }}?text=مرحبا، أريد الاستفسار عن المنتج: {{ product.title }}">
-       📞 تواصل واتساب
+       href="https://wa.me/{{ product.seller.whatsapp }}?text=Hello, I saw your product on Zenvy: {{ product.title }}">
+       Contact on WhatsApp
     </a>
 
     <br><br>
-    <a href="/">رجوع للرئيسية</a>
+    <a href="/">Back</a>
 </div>
 
 </body>

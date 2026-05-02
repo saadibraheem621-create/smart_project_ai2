@@ -1,54 +1,70 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <title>سوق الناس</title>
+    <title>Zenvy Market</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
+<nav class="nav">
+    <h2>Zenvy</h2>
+    <div>
+        <a href="/">Home</a>
+        {% if user %}
+            <a href="/add">Add Product</a>
+            <a href="/my-products">My Products</a>
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        {% endif %}
+    </div>
+</nav>
+
 <header class="hero">
-    <h1>🛒 سوق الناس</h1>
-    <p>منصة مفتوحة لعرض منتجات الناس والتواصل مباشرة مع أصحابها</p>
-    <a class="btn" href="/add">➕ انشر منتجك مجانًا</a>
+    <h1>Zenvy Market</h1>
+    <p>Where People Sell & Connect</p>
+    <a class="btn" href="/add">Sell Your Product</a>
 </header>
 
 <form class="search-box" method="GET">
-    <input type="text" name="q" placeholder="ابحث عن منتج..." value="{{ q }}">
+    <input type="text" name="q" placeholder="Search products..." value="{{ q }}">
 
     <select name="category">
-        <option value="">كل التصنيفات</option>
+        <option value="">All Categories</option>
         {% for c in categories %}
         <option value="{{ c }}" {% if selected_category == c %}selected{% endif %}>{{ c }}</option>
         {% endfor %}
     </select>
 
-    <button type="submit">بحث</button>
+    <button type="submit">Search</button>
 </form>
 
 <section class="products">
     {% for p in products %}
     <div class="card">
         {% if p.image_name %}
-        <img src="/static/uploads/{{ p.image_name }}">
+            <img src="/static/uploads/{{ p.image_name }}">
         {% else %}
-        <div class="no-image">لا توجد صورة</div>
+            <div class="no-image">No Image</div>
         {% endif %}
 
         <span class="category">{{ p.category }}</span>
         <h3>{{ p.title }}</h3>
-        <p class="price">{{ p.price }} د.ع</p>
-        <p>👤 {{ p.seller_name }}</p>
+        <p class="price">{{ p.price }}</p>
+        <p>📍 {{ p.city or "Not specified" }}</p>
+        <p>👤 {{ p.seller.full_name }}</p>
 
-        <a class="details" href="/product/{{ p.id }}">عرض التفاصيل</a>
+        <a class="details" href="/product/{{ p.id }}">View Details</a>
     </div>
     {% else %}
-    <p class="empty">لا توجد منتجات حاليًا</p>
+    <p class="empty">No products yet</p>
     {% endfor %}
 </section>
 
 <footer>
-    <a href="/admin-login">دخول الإدارة</a>
+    <a href="/admin-login">Admin</a>
 </footer>
 
 </body>

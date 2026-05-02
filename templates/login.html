@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Login - Zenvy</title>
+    <title>Login - Zenvy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
 <div class="form-box">
-    <h2>Admin Login</h2>
+    <h2>Login</h2>
 
     {% with messages = get_flashed_messages() %}
       {% for msg in messages %}
@@ -17,9 +17,13 @@
     {% endwith %}
 
     <form method="POST">
-        <input type="password" name="password" placeholder="Admin password" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+
         <button type="submit">Login</button>
     </form>
+
+    <p>No account? <a href="/register">Create account</a></p>
 </div>
 
 </body>
