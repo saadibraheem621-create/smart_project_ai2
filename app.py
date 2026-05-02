@@ -231,4 +231,53 @@ def show_my_product(product_id):
     if not user:
         return redirect(url_for("login"))
 
+
     product = Product.query.get_or_404(product_id)
+    if product.user_id == user.id:
+        product.is_active = True
+        db.session.commit()
+
+    return redirect(url_for("my_products"))
+
+
+@app.route("/admin-login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        password = request.form.get("password")
+        if password == ADMIN_PASSWORD:
+            session["admin"] = True
+            return redirect(url_for("admin"))
+        flash("Wrong admin password")
+
+    return render_template("admin_login.html", user=current_user())
+
+
+@app.route("/admin")
+def admin():
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+
+    products = Product.query.order_by(Product.created_at.desc()).all()
+    users = User.query.order_by(User.created_at.desc()).all()
+
+    return render_template("admin.html", products=products, users=users, user=current_user())
+
+
+@app.route("/admin/delete-product/<int:product_id>")
+def admin_delete_product(product_id):
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+
+    product = Product.query.get_or_404(product_id)
+    db.session.delete(product)
+    db.session.commit()
+
+    return redirect(url_for("admin"))
+
+
+with app.app_context():
+    db.create_all()
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
