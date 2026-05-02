@@ -231,4 +231,4 @@ def show_my_product(product_id):
     if not user:
         return redirect(url_for("login"))
 
-    product = Product.query.get_or_404(product
+    product = Product.query.get_or_404(product_id)
