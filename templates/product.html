@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.title }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="product-page">
+
+    {% if product.image_name %}
+    <img src="/static/uploads/{{ product.image_name }}">
+    {% else %}
+    <div class="no-image big">لا توجد صورة</div>
+    {% endif %}
+
+    <h1>{{ product.title }}</h1>
+
+    <span class="category">{{ product.category }}</span>
+
+    <h2>{{ product.price }} د.ع</h2>
+
+    <p class="desc">{{ product.description }}</p>
+
+    <p>👤 البائع: {{ product.seller_name }}</p>
+
+    <a class="whatsapp" target="_blank"
+       href="https://wa.me/{{ product.whatsapp }}?text=مرحبا، أريد الاستفسار عن المنتج: {{ product.title }}">
+       📞 تواصل واتساب
+    </a>
+
+    <br><br>
+    <a href="/">رجوع للرئيسية</a>
+</div>
+
+</body>
+</html>

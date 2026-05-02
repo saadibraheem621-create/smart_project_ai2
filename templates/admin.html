@@ -1,39 +1,60 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>لوحة الإدارة</title>
-  <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <title>لوحة الإدارة</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1 class="admin-title">📋 لوحة الطلبات</h1>
+<div class="admin-header">
+    <h1>⚙️ لوحة الإدارة</h1>
+    <a class="btn" href="/">الرئيسية</a>
+    <a class="btn danger" href="/logout">خروج</a>
+</div>
 
 <table>
-  <tr>
-    <th>الرقم</th>
-    <th>الاسم</th>
-    <th>واتساب</th>
-    <th>الخدمة</th>
-    <th>الملف</th>
-    <th>الحالة</th>
-    <th>تغيير الحالة</th>
-  </tr>
+    <tr>
+        <th>الصورة</th>
+        <th>المنتج</th>
+        <th>البائع</th>
+        <th>واتساب</th>
+        <th>السعر</th>
+        <th>الحالة</th>
+        <th>إجراءات</th>
+    </tr>
 
-  {% for order in orders %}
-  <tr>
-    <td>{{ order.id }}</td>
-    <td>{{ order.customer_name }}</td>
-    <td>{{ order.whatsapp }}</td>
-    <td>{{ order.service }}</td>
-    <td>{{ order.file_name }}</td>
-    <td>{{ order.status }}</td>
-    <td>
-      <a href="/update_status/{{ order.id }}/In Progress">قيد العمل</a> |
-      <a href="/update_status/{{ order.id }}/Completed">مكتمل</a>
-    </td>
-  </tr>
-  {% endfor %}
+    {% for p in products %}
+    <tr>
+        <td>
+            {% if p.image_name %}
+            <img class="admin-img" src="/static/uploads/{{ p.image_name }}">
+            {% else %}
+            لا توجد
+            {% endif %}
+        </td>
+        <td>{{ p.title }}</td>
+        <td>{{ p.seller_name }}</td>
+        <td>{{ p.whatsapp }}</td>
+        <td>{{ p.price }}</td>
+        <td>
+            {% if p.is_active %}
+            ظاهر
+            {% else %}
+            مخفي
+            {% endif %}
+        </td>
+        <td>
+            {% if p.is_active %}
+            <a href="/hide/{{ p.id }}">إخفاء</a>
+            {% else %}
+            <a href="/show/{{ p.id }}">إظهار</a>
+            {% endif %}
+            |
+            <a class="delete" href="/delete/{{ p.id }}" onclick="return confirm('هل أنت متأكد من الحذف؟')">حذف</a>
+        </td>
+    </tr>
+    {% endfor %}
 </table>
 
 </body>

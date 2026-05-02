@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>دخول الإدارة</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="form-box">
+    <h2>🔐 دخول الإدارة</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+        <p class="flash">{{ msg }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <input type="password" name="password" placeholder="كلمة السر" required>
+        <button type="submit">دخول</button>
+    </form>
+
+    <a href="/">رجوع</a>
+</div>
+
+</body>
+</html>
