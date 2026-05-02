@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Project IQ</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<section class="hero">
+  <h1>🚀 Smart Project IQ</h1>
+  <p>منصة خدمات تحليل بيانات، داشبورد، وذكاء اصطناعي</p>
+  <a class="btn" href="/order">اطلب خدمة الآن</a>
+</section>
+
+<section class="services">
+  {% for service in services %}
+  <div class="card">
+    <h2>{{ service.name }}</h2>
+    <p>{{ service.desc }}</p>
+    <h3>{{ service.price }}$</h3>
+    <a class="btn" href="/order">طلب الخدمة</a>
+  </div>
+  {% endfor %}
+</section>
+
+<section class="contact">
+  <h2>تواصل معنا</h2>
+  <a class="btn whatsapp" href="https://wa.me/964XXXXXXXXXX">واتساب</a>
+  <a class="btn telegram" href="https://t.me/Ali_saad_bot">تلگرام</a>
+</section>
+
+</body>
+</html>

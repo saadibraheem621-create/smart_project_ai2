@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>لوحة الإدارة</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1 class="admin-title">📋 لوحة الطلبات</h1>
+
+<table>
+  <tr>
+    <th>الرقم</th>
+    <th>الاسم</th>
+    <th>واتساب</th>
+    <th>الخدمة</th>
+    <th>الملف</th>
+    <th>الحالة</th>
+    <th>تغيير الحالة</th>
+  </tr>
+
+  {% for order in orders %}
+  <tr>
+    <td>{{ order.id }}</td>
+    <td>{{ order.customer_name }}</td>
+    <td>{{ order.whatsapp }}</td>
+    <td>{{ order.service }}</td>
+    <td>{{ order.file_name }}</td>
+    <td>{{ order.status }}</td>
+    <td>
+      <a href="/update_status/{{ order.id }}/In Progress">قيد العمل</a> |
+      <a href="/update_status/{{ order.id }}/Completed">مكتمل</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+</body>
+</html>
