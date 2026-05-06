@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment - Zenvy</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<nav class="nav">
+    <div class="logo">Zenvy</div>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/my-products">My Products</a>
+        <a class="logout" href="/logout">Logout</a>
+    </div>
+</nav>
+
+<div class="form-box">
+
+    {% with messages = get_flashed_messages() %}
+      {% for msg in messages %}
+        <p class="flash">{{ msg }}</p>
+      {% endfor %}
+    {% endwith %}
+
+    {% if service_type == "featured" %}
+        <h2>⭐ Featured Product</h2>
+        <p>Make your product appear at the top for 7 days.</p>
+        <h3>{{ product.title }}</h3>
+    {% else %}
+        <h2>🚀 Upgrade to Pro Seller</h2>
+        <p>Pro sellers can add more than 3 products for 30 days.</p>
+    {% endif %}
+
+    <h2 class="price">{{ amount }}</h2>
+
+    <div class="payment-methods">
+
+        <div class="pay-card">
+            <h3>📱 Zain Cash</h3>
+            <p>Send payment to:</p>
+            <b>{{ zain_cash }}</b>
+        </div>
+
+        <div class="pay-card">
+            <h3>💰 USDT TRC20</h3>
+            <p>Send payment to this wallet:</p>
+            <b>{{ usdt_wallet }}</b>
+        </div>
+
+        <div class="pay-card">
+            <h3>💳 MasterCard / Visa</h3>
+            {% if mastercard_link %}
+                <a class="btn" target="_blank" href="{{ mastercard_link }}">Pay by Card</a>
+            {% else %}
+                <p>Coming soon</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <hr>
+
+    <h3>Confirm Payment</h3>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <select name="method" required>
+            <option value="">Choose payment method</option>
+            <option value="zain">Zain Cash</option>
+            <option value="usdt">USDT</option>
+            <option value="mastercard">MasterCard / Visa</option>
+        </select>
+
+        <input name="payer_phone" placeholder="Your phone / wallet / card note" required>
+
+        <textarea name="transaction_note" rows="4" placeholder="Transaction ID or payment note"></textarea>
+
+        <label>Upload Payment Screenshot</label>
+        <input type="file" name="proof" accept="image/*">
+
+        <button type="submit">I Paid - Send Request</button>
+    </form>
+
+</div>
+
+</body>
+</html>

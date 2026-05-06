@@ -2,15 +2,20 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "zenvy-secret")
 app.config["UPLOAD_FOLDER"] = "static/uploads"
+app.config["PAYMENT_PROOF_FOLDER"] = "static/payment_proofs"
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "12345")
+
+ZAIN_CASH_NUMBER = os.environ.get("ZAIN_CASH_NUMBER", "0780XXXXXXX")
+USDT_WALLET = os.environ.get("USDT_WALLET", "TTDgpsoLSry46z2cXaiXd9uxN8vj8pL3ov")
+MASTERCARD_LINK = os.environ.get("MASTERCARD_LINK", "")
 
 db_url = os.environ.get("DATABASE_URL", "sqlite:///zenvy.db")
 if db_url and db_url.startswith("postgres://"):
@@ -34,8 +39,11 @@ class User(db.Model):
     whatsapp = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    is_pro = db.Column(db.Boolean, default=False)
+    pro_until = db.Column(db.DateTime)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     products = db.relationship("Product", backref="seller", lazy=True)
 
 
@@ -47,10 +55,36 @@ class Product(db.Model):
     description = db.Column(db.Text)
     image_name = db.Column(db.String(200))
     city = db.Column(db.String(100))
+
     is_active = db.Column(db.Boolean, default=True)
+
+    is_featured = db.Column(db.Boolean, default=False)
+    featured_until = db.Column(db.DateTime)
+    featured_requested = db.Column(db.Boolean, default=False)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=True)
+
+    service_type = db.Column(db.String(50), nullable=False)  # featured / pro
+    method = db.Column(db.String(50), nullable=False)        # zain / usdt / mastercard
+    amount = db.Column(db.String(50), nullable=False)
+
+    payer_phone = db.Column(db.String(50))
+    transaction_note = db.Column(db.String(250))
+    proof_image = db.Column(db.String(250))
+
+    status = db.Column(db.String(50), default="pending")     # pending / approved / rejected
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="payments")
+    product = db.relationship("Product", backref="payments")
 
 
 def current_user():
@@ -60,10 +94,36 @@ def current_user():
     return None
 
 
+def is_user_pro(user):
+    if not user:
+        return False
+
+    if user.is_pro and user.pro_until and user.pro_until > datetime.utcnow():
+        return True
+
+    return False
+
+
+def save_file(file, folder):
+    if file and file.filename:
+        os.makedirs(folder, exist_ok=True)
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(folder, filename))
+        return filename
+    return None
+
+
 @app.route("/")
 def index():
     q = request.args.get("q", "").strip()
     category = request.args.get("category", "").strip()
+    now = datetime.utcnow()
+
+    featured_products = Product.query.filter(
+        Product.is_active == True,
+        Product.is_featured == True,
+        Product.featured_until > now
+    ).order_by(Product.featured_until.desc()).all()
 
     query = Product.query.filter_by(is_active=True)
 
@@ -78,6 +138,7 @@ def index():
     return render_template(
         "index.html",
         products=products,
+        featured_products=featured_products,
         categories=CATEGORIES,
         q=q,
         selected_category=category,
@@ -153,26 +214,21 @@ def add_product():
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        title = request.form.get("title")
-        category = request.form.get("category")
-        price = request.form.get("price")
-        city = request.form.get("city")
-        description = request.form.get("description")
+        user_products_count = Product.query.filter_by(user_id=user.id).count()
+
+        if not is_user_pro(user) and user_products_count >= 3:
+            flash("Free sellers can add 3 products only. Upgrade to Pro.")
+            return redirect(url_for("upgrade_pro"))
 
         image = request.files.get("image")
-        image_name = None
-
-        if image and image.filename:
-            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-            image_name = secure_filename(image.filename)
-            image.save(os.path.join(app.config["UPLOAD_FOLDER"], image_name))
+        image_name = save_file(image, app.config["UPLOAD_FOLDER"])
 
         product = Product(
-            title=title,
-            category=category,
-            price=price,
-            city=city,
-            description=description,
+            title=request.form.get("title"),
+            category=request.form.get("category"),
+            price=request.form.get("price"),
+            city=request.form.get("city"),
+            description=request.form.get("description"),
             image_name=image_name,
             user_id=user.id
         )
@@ -198,7 +254,7 @@ def my_products():
         return redirect(url_for("login"))
 
     products = Product.query.filter_by(user_id=user.id).order_by(Product.created_at.desc()).all()
-    return render_template("my_products.html", products=products, user=user)
+    return render_template("my_products.html", products=products, user=user, is_pro=is_user_pro(user))
 
 
 @app.route("/my-products/delete/<int:product_id>")
@@ -248,6 +304,93 @@ def show_my_product(product_id):
     return redirect(url_for("my_products"))
 
 
+@app.route("/payment/featured/<int:product_id>", methods=["GET", "POST"])
+def payment_featured(product_id):
+    user = current_user()
+    if not user:
+        return redirect(url_for("login"))
+
+    product = Product.query.get_or_404(product_id)
+
+    if product.user_id != user.id:
+        return redirect(url_for("my_products"))
+
+    if request.method == "POST":
+        proof = request.files.get("proof")
+        proof_image = save_file(proof, app.config["PAYMENT_PROOF_FOLDER"])
+
+        payment = Payment(
+            user_id=user.id,
+            product_id=product.id,
+            service_type="featured",
+            method=request.form.get("method"),
+            amount="5 USD",
+            payer_phone=request.form.get("payer_phone"),
+            transaction_note=request.form.get("transaction_note"),
+            proof_image=proof_image,
+            status="pending"
+        )
+
+        product.featured_requested = True
+
+        db.session.add(payment)
+        db.session.commit()
+
+        flash("Payment request sent. Admin will review it.")
+        return redirect(url_for("my_products"))
+
+    return render_template(
+        "payment.html",
+        user=user,
+        product=product,
+        service_type="featured",
+        amount="5 USD",
+        zain_cash=ZAIN_CASH_NUMBER,
+        usdt_wallet=USDT_WALLET,
+        mastercard_link=MASTERCARD_LINK
+    )
+
+
+@app.route("/upgrade-pro", methods=["GET", "POST"])
+def upgrade_pro():
+    user = current_user()
+    if not user:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        proof = request.files.get("proof")
+        proof_image = save_file(proof, app.config["PAYMENT_PROOF_FOLDER"])
+
+        payment = Payment(
+            user_id=user.id,
+            product_id=None,
+            service_type="pro",
+            method=request.form.get("method"),
+            amount="10 USD",
+            payer_phone=request.form.get("payer_phone"),
+            transaction_note=request.form.get("transaction_note"),
+            proof_image=proof_image,
+            status="pending"
+        )
+
+        db.session.add(payment)
+        db.session.commit()
+
+        flash("Pro payment request sent. Admin will review it.")
+        return redirect(url_for("my_products"))
+
+    return render_template(
+        "payment.html",
+        user=user,
+        product=None,
+        service_type="pro",
+        amount="10 USD",
+        zain_cash=ZAIN_CASH_NUMBER,
+        usdt_wallet=USDT_WALLET,
+        mastercard_link=MASTERCARD_LINK
+    )
+
+
 @app.route("/admin-login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
@@ -269,8 +412,15 @@ def admin():
 
     products = Product.query.order_by(Product.created_at.desc()).all()
     users = User.query.order_by(User.created_at.desc()).all()
+    payments = Payment.query.order_by(Payment.created_at.desc()).all()
 
-    return render_template("admin.html", products=products, users=users, user=current_user())
+    return render_template(
+        "admin.html",
+        products=products,
+        users=users,
+        payments=payments,
+        user=current_user()
+    )
 
 
 @app.route("/admin/delete-product/<int:product_id>")
@@ -282,6 +432,43 @@ def admin_delete_product(product_id):
     db.session.delete(product)
     db.session.commit()
 
+    return redirect(url_for("admin"))
+
+
+@app.route("/admin/approve-payment/<int:payment_id>")
+def approve_payment(payment_id):
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+
+    payment = Payment.query.get_or_404(payment_id)
+    payment.status = "approved"
+
+    if payment.service_type == "featured" and payment.product:
+        payment.product.is_featured = True
+        payment.product.featured_requested = False
+        payment.product.featured_until = datetime.utcnow() + timedelta(days=7)
+
+    if payment.service_type == "pro":
+        user = User.query.get(payment.user_id)
+        user.is_pro = True
+        user.pro_until = datetime.utcnow() + timedelta(days=30)
+
+    db.session.commit()
+    return redirect(url_for("admin"))
+
+
+@app.route("/admin/reject-payment/<int:payment_id>")
+def reject_payment(payment_id):
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+
+    payment = Payment.query.get_or_404(payment_id)
+    payment.status = "rejected"
+
+    if payment.product:
+        payment.product.featured_requested = False
+
+    db.session.commit()
     return redirect(url_for("admin"))
 
 

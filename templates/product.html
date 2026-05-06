@@ -2,51 +2,118 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ product.title }} - Zenvy</title>
+    <title>My Products - Zenvy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
 <nav class="nav">
     <div class="logo">Zenvy</div>
+
     <div class="nav-links">
         <a href="/">Home</a>
-        {% if user %}
-            <a href="/my-products">My Products</a>
-            <a class="logout" href="/logout">Logout</a>
+        <a href="/add">Add Product</a>
+
+        {% if is_pro %}
+            <span class="pro-badge">PRO SELLER</span>
         {% else %}
-            <a href="/login">Login</a>
+            <a class="upgrade-btn" href="/upgrade-pro">Upgrade Pro</a>
         {% endif %}
+
+        <a class="logout" href="/logout">Logout</a>
     </div>
 </nav>
 
-<section class="product-layout">
-    <div class="product-image">
-        {% if product.image_name %}
-            <img src="/static/uploads/{{ product.image_name }}">
-        {% else %}
-            <div class="no-image big">No Image</div>
-        {% endif %}
-    </div>
+<div class="container">
 
-    <div class="product-info">
-        <span class="category">{{ product.category }}</span>
-        <h1>{{ product.title }}</h1>
-        <h2>{{ product.price }}</h2>
-        <p class="meta">📍 {{ product.city }}</p>
-        <p class="desc">{{ product.description }}</p>
+    <h1>My Products</h1>
 
-        <div class="seller-box">
-            <h3>Seller</h3>
-            <p>{{ product.seller.full_name }}</p>
+    {% with messages = get_flashed_messages() %}
+      {% for msg in messages %}
+        <p class="flash">{{ msg }}</p>
+      {% endfor %}
+    {% endwith %}
+
+    {% if products %}
+
+        <div class="products-grid">
+
+        {% for product in products %}
+
+            <div class="product-card">
+
+                {% if product.image_name %}
+                    <img src="/static/uploads/{{ product.image_name }}">
+                {% endif %}
+
+                <div class="product-content">
+
+                    <h2>{{ product.title }}</h2>
+
+                    <p class="price">{{ product.price }}</p>
+
+                    <p>{{ product.city }}</p>
+
+                    <p class="category">{{ product.category }}</p>
+
+                    {% if product.is_featured %}
+                        <span class="featured-badge">⭐ Featured</span>
+                    {% endif %}
+
+                    {% if not product.is_active %}
+                        <span class="hidden-badge">Hidden</span>
+                    {% endif %}
+
+                    {% if product.featured_requested %}
+                        <span class="pending-badge">Payment Pending</span>
+                    {% endif %}
+
+                    <div class="actions">
+
+                        <a class="view-btn" href="/product/{{ product.id }}">
+                            View
+                        </a>
+
+                        {% if product.is_active %}
+                            <a class="hide-btn" href="/my-products/hide/{{ product.id }}">
+                                Hide
+                            </a>
+                        {% else %}
+                            <a class="show-btn" href="/my-products/show/{{ product.id }}">
+                                Show
+                            </a>
+                        {% endif %}
+
+                        <a class="delete-btn" href="/my-products/delete/{{ product.id }}">
+                            Delete
+                        </a>
+
+                    </div>
+
+                    {% if not product.is_featured and not product.featured_requested %}
+                        <a class="featured-btn" href="/payment/featured/{{ product.id }}">
+                            ⭐ Make Featured
+                        </a>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
         </div>
 
-        <a class="whatsapp" target="_blank"
-           href="https://wa.me/{{ product.seller.whatsapp }}?text=Hello, I saw your product on Zenvy: {{ product.title }}">
-           Contact on WhatsApp
-        </a>
-    </div>
-</section>
+    {% else %}
+
+        <div class="empty-box">
+            <h2>No Products Yet</h2>
+            <a class="add-first-btn" href="/add">Add First Product</a>
+        </div>
+
+    {% endif %}
+
+</div>
 
 </body>
 </html>
