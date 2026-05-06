@@ -351,43 +351,38 @@ def payment_featured(product_id):
     )
 
 
-@app.route("/upgrade-pro", methods=["GET", "POST"])
-def upgrade_pro():
+@app.route("/my-products/edit/<int:product_id>", methods=["GET", "POST"])
+def edit_my_product(product_id):
     user = current_user()
     if not user:
         return redirect(url_for("login"))
 
+    product = Product.query.get_or_404(product_id)
+
+    if product.user_id != user.id:
+        return redirect(url_for("my_products"))
+
     if request.method == "POST":
-        proof = request.files.get("proof")
-        proof_image = save_file(proof, app.config["PAYMENT_PROOF_FOLDER"])
+        product.title = request.form.get("title")
+        product.category = request.form.get("category")
+        product.price = request.form.get("price")
+        product.city = request.form.get("city")
+        product.description = request.form.get("description")
 
-        payment = Payment(
-            user_id=user.id,
-            product_id=None,
-            service_type="pro",
-            method=request.form.get("method"),
-            amount="10 USD",
-            payer_phone=request.form.get("payer_phone"),
-            transaction_note=request.form.get("transaction_note"),
-            proof_image=proof_image,
-            status="pending"
-        )
+        image = request.files.get("image")
+        if image and image.filename:
+            image_name = save_file(image, app.config["UPLOAD_FOLDER"])
+            product.image_name = image_name
 
-        db.session.add(payment)
         db.session.commit()
-
-        flash("Pro payment request sent. Admin will review it.")
+        flash("Product updated successfully")
         return redirect(url_for("my_products"))
 
     return render_template(
-        "payment.html",
-        user=user,
-        product=None,
-        service_type="pro",
-        amount="10 USD",
-        zain_cash=ZAIN_CASH_NUMBER,
-        usdt_wallet=USDT_WALLET,
-        mastercard_link=MASTERCARD_LINK
+        "edit_product.html",
+        product=product,
+        categories=CATEGORIES,
+        user=user
     )
 
 

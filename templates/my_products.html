@@ -41,7 +41,9 @@
             <a href="/my-products/show/{{ p.id }}">Show</a>
         {% endif %}
 
-        |
+        <a class="edit-btn" href="/my-products/edit/{{ p.id }}">
+            Edit
+        </a>|
         <a class="delete" href="/my-products/delete/{{ p.id }}"
            onclick="return confirm('Delete this product?')">Delete</a>
     </div>

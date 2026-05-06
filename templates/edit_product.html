@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Product - Zenvy</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<nav class="nav">
+    <div class="logo">Zenvy</div>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/my-products">My Products</a>
+        <a class="logout" href="/logout">Logout</a>
+    </div>
+</nav>
+
+<div class="form-box">
+    <h2>Edit Product</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input name="title" value="{{ product.title }}" required>
+        <input name="price" value="{{ product.price }}" required>
+        <input name="city" value="{{ product.city }}" required>
+
+        <select name="category" required>
+            {% for c in categories %}
+            <option value="{{ c }}" {% if product.category == c %}selected{% endif %}>
+                {{ c }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <textarea name="description" rows="5">{{ product.description }}</textarea>
+
+        <label>Change Image</label>
+        <input type="file" name="image">
+
+        <button type="submit">Save Changes</button>
+    </form>
+</div>
+
+</body>
+</html>
