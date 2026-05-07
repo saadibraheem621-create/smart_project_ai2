@@ -59,7 +59,7 @@ class Product(db.Model):
     is_active = db.Column(db.Boolean, default=False)
     is_rejected = db.Column(db.Boolean, default=False)
 
-     is_featured = db.Column(db.Boolean, default=False)
+    is_featured = db.Column(db.Boolean, default=False)
     featured_until = db.Column(db.DateTime)
     featured_requested = db.Column(db.Boolean, default=False)
 
