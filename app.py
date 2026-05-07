@@ -13,7 +13,7 @@ app.config["PAYMENT_PROOF_FOLDER"] = "static/payment_proofs"
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "12345")
 
-ZAIN_CASH_NUMBER = os.environ.get("ZAIN_CASH_NUMBER", "0780XXXXXXX")
+ZAIN_CASH_NUMBER = os.environ.get("ZAIN_CASH_NUMBER", "07739046052")
 USDT_WALLET = os.environ.get("USDT_WALLET", "TTDgpsoLSry46z2cXaiXd9uxN8vj8pL3ov")
 MASTERCARD_LINK = os.environ.get("MASTERCARD_LINK", "")
 
@@ -56,9 +56,10 @@ class Product(db.Model):
     image_name = db.Column(db.String(200))
     city = db.Column(db.String(100))
 
-    is_active = db.Column(db.Boolean, default=True)
+    is_active = db.Column(db.Boolean, default=False)
+    is_rejected = db.Column(db.Boolean, default=False)
 
-    is_featured = db.Column(db.Boolean, default=False)
+     is_featured = db.Column(db.Boolean, default=False)
     featured_until = db.Column(db.DateTime)
     featured_requested = db.Column(db.Boolean, default=False)
 
@@ -205,6 +206,32 @@ def logout():
     session.pop("user_id", None)
     session.pop("admin", None)
     return redirect(url_for("index"))
+    @app.route("/admin/approve-product/<int:product_id>")
+def approve_product(product_id):
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+
+    product = Product.query.get_or_404(product_id)
+    product.is_active = True
+    product.is_rejected = False
+
+    db.session.commit()
+    flash("Product approved")
+    return redirect(url_for("admin"))
+
+
+@app.route("/admin/reject-product/<int:product_id>")
+def reject_product(product_id):
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+
+    product = Product.query.get_or_404(product_id)
+    product.is_active = False
+    product.is_rejected = True
+
+    db.session.commit()
+    flash("Product rejected")
+    return redirect(url_for("admin"))
 
 
 @app.route("/add", methods=["GET", "POST"])

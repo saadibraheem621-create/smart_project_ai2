@@ -59,6 +59,15 @@
         <td>{{ p.title }}</td>
         <td>{{ p.seller.full_name }}</td>
         <td>{{ p.price }}</td>
+        <td>
+            {% if p.is_active %}
+                Approved
+            {% elif p.is_rejected %}
+                Rejected
+            {% else %}
+                Pending
+            {% endif %}
+        </td>
         <td>{{ "Visible" if p.is_active else "Hidden" }}</td>
         <td>
             <a class="delete" href="/admin/delete-product/{{ p.id }}"

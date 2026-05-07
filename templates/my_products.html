@@ -24,6 +24,13 @@
 <section class="products">
     {% for p in products %}
     <div class="card">
+        {% if product.is_active %}
+    <span class="active">Approved</span>
+{% elif product.is_rejected %}
+    <span class="hidden">Rejected</span>
+{% else %}
+    <span class="pending-badge">Pending Review</span>
+{% endif %}
         {% if p.image_name %}
             <img src="/static/uploads/{{ p.image_name }}">
         {% else %}
