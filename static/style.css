@@ -464,3 +464,8 @@ th {
         width:22px;
         height:22px;
     }
+    .google-icon{
+        width:22px !important;
+        height:22px !important;
+        object-fit:contain;
+    }
