@@ -627,7 +627,7 @@ def admin_delete_product(product_id):
 
     return redirect(url_for("admin"))
     @app.route("/admin")
-def admin():
+     def admin():
     if not session.get("admin"):
         return redirect(url_for("admin_login"))
 
