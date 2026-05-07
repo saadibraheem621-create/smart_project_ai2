@@ -176,45 +176,44 @@ def login():
 
 @app.route("/google-login")
 def google_login():
-    redirect_uri = "https://smartprojectai2-production-4709.up.railway.app/auth/google/callback"
+    redirect_uri = url_for(
+        "google_callback",
+        _external=True,
+        _scheme="https"
+    )
+
     return google.authorize_redirect(redirect_uri)
 
 
 @app.route("/auth/google/callback")
 def google_callback():
+
     token = google.authorize_access_token()
 
-    resp = google.get("https://www.googleapis.com/oauth2/v3/userinfo")
+    resp = google.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo"
+    )
+
     user_info = resp.json()
 
-    email = user_info.get("email")
+    email = user_info["email"]
     name = user_info.get("name", "Google User")
-
-    if not email:
-        flash("Google login failed")
-        return redirect(url_for("login"))
 
     user = User.query.filter_by(email=email).first()
 
     if not user:
-        username = email.split("@")[0]
-
-        if User.query.filter_by(username=username).first():
-            username = username + str(int(datetime.utcnow().timestamp()))
-
         user = User(
-            full_name=name,
-            username=username,
-            whatsapp="google-login",
+            username=name,
             email=email,
-            password_hash=generate_password_hash(os.urandom(16).hex()),
+            password=generate_password_hash(os.urandom(16).hex())
         )
 
         db.session.add(user)
         db.session.commit()
 
     session["user_id"] = user.id
-    flash("Logged in with Google successfully")
+    session["username"] = user.username
+
     return redirect(url_for("index"))
 
 
