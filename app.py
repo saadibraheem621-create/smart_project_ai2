@@ -34,7 +34,7 @@ google = oauth.register(
 )
 @app.route("/google-login")
 def google_login():
-    redirect_uri = url_for("redirect_uri = "https://smartprojectai2-production-4709.up.railway.app/auth/google/callback"", _external=True)
+    redirect_uri = "https://smartprojectai2-production-4709.up.railway.app/auth/google/callback"
     return google.authorize_redirect(redirect_uri)
 
 
