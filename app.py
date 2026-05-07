@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from authlib.integrations.flask_client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from authlib.integrations.flask_client import OAuth
 from datetime import datetime, timedelta
 import os
 
@@ -21,6 +21,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
 oauth = OAuth(app)
 
 google = oauth.register(
@@ -28,47 +29,8 @@ google = oauth.register(
     client_id=os.environ.get("GOOGLE_CLIENT_ID"),
     client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={
-        "scope": "openid email profile"
-    }
+    client_kwargs={"scope": "openid email profile"},
 )
-@app.route("/google-login")
-def google_login():
-    redirect_uri = "https://smartprojectai2-production-4709.up.railway.app/auth/google/callback"
-    return google.authorize_redirect(redirect_uri)
-
-
-@app.route("/auth/google/callback")
-def google_callback():
-    token = google.authorize_access_token()
-    user_info = token.get("userinfo")
-
-    email = user_info.get("email")
-    name = user_info.get("name")
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user:
-        username = email.split("@")[0]
-
-        existing_username = User.query.filter_by(username=username).first()
-        if existing_username:
-            username = username + str(int(datetime.utcnow().timestamp()))
-
-        user = User(
-            full_name=name,
-            username=username,
-            whatsapp="google-login",
-            email=email,
-            password_hash=generate_password_hash(os.urandom(16).hex())
-        )
-
-        db.session.add(user)
-        db.session.commit()
-
-    session["user_id"] = user.id
-
-    return redirect(url_for("index"))
 
 CATEGORIES = [
     "Mobiles",
@@ -78,7 +40,7 @@ CATEGORIES = [
     "Fashion",
     "Real Estate",
     "Services",
-    "Other"
+    "Other",
 ]
 
 
@@ -89,10 +51,8 @@ class User(db.Model):
     whatsapp = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-
     is_pro = db.Column(db.Boolean, default=False)
     pro_until = db.Column(db.DateTime)
-
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     products = db.relationship("Product", backref="seller", lazy=True)
@@ -100,7 +60,6 @@ class User(db.Model):
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
     title = db.Column(db.String(150), nullable=False)
     category = db.Column(db.String(100), nullable=False)
     price = db.Column(db.String(50), nullable=False)
@@ -116,18 +75,15 @@ class Product(db.Model):
     featured_requested = db.Column(db.Boolean, default=False)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
     user_name = db.Column(db.String(120))
     payment_type = db.Column(db.String(100))
     amount = db.Column(db.String(50))
     note = db.Column(db.Text)
-
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -195,8 +151,6 @@ def register():
         db.session.commit()
 
         session["user_id"] = user.id
-        flash("Account created successfully")
-
         return redirect(url_for("index"))
 
     return render_template("register.html", user=current_user())
@@ -220,15 +174,61 @@ def login():
         return redirect(url_for("index"))
 
     return render_template("login.html", user=current_user())
+
+
+@app.route("/google-login")
+def google_login():
+    redirect_uri = "https://smartprojectai2-production-4709.up.railway.app/auth/google/callback"
+    return google.authorize_redirect(redirect_uri)
+
+
+@app.route("/auth/google/callback")
+def google_callback():
+    token = google.authorize_access_token()
+
+    resp = google.get("https://openidconnect.googleapis.com/v1/userinfo")
+    user_info = resp.json()
+
+    email = user_info.get("email")
+    name = user_info.get("name", "Google User")
+
+    if not email:
+        flash("Google login failed")
+        return redirect(url_for("login"))
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        username = email.split("@")[0]
+
+        if User.query.filter_by(username=username).first():
+            username = username + str(int(datetime.utcnow().timestamp()))
+
+        user = User(
+            full_name=name,
+            username=username,
+            whatsapp="google-login",
+            email=email,
+            password_hash=generate_password_hash(os.urandom(16).hex())
+        )
+
+        db.session.add(user)
+        db.session.commit()
+
+    session["user_id"] = user.id
+    flash("Logged in with Google successfully")
+    return redirect(url_for("index"))
+
+
 @app.route("/forgot-password")
+@app.route("/forgot_password")
 def forgot_password():
     return render_template("forgot_password.html")
 
 
 @app.route("/logout")
 def logout():
-    session.pop("user_id", None)
-    session.pop("admin", None)
+    session.clear()
     return redirect(url_for("index"))
 
 
@@ -414,16 +414,11 @@ def payment():
     user = current_user()
 
     if request.method == "POST":
-        user_name = request.form.get("user_name")
-        payment_type = request.form.get("payment_type")
-        amount = request.form.get("amount")
-        note = request.form.get("note")
-
         pay = Payment(
-            user_name=user_name,
-            payment_type=payment_type,
-            amount=amount,
-            note=note
+            user_name=request.form.get("user_name"),
+            payment_type=request.form.get("payment_type"),
+            amount=request.form.get("amount"),
+            note=request.form.get("note")
         )
 
         db.session.add(pay)
@@ -458,24 +453,17 @@ def admin():
     products = Product.query.order_by(Product.created_at.desc()).all()
     payments = Payment.query.order_by(Payment.created_at.desc()).all()
 
-    total_users = User.query.count()
-    total_products = Product.query.count()
-    pending_products = Product.query.filter_by(is_active=False, is_rejected=False).count()
-    approved_products = Product.query.filter_by(is_active=True).count()
-    rejected_products = Product.query.filter_by(is_rejected=True).count()
-    featured_requests = Product.query.filter_by(featured_requested=True).count()
-
     return render_template(
         "admin.html",
         users=users,
         products=products,
         payments=payments,
-        total_users=total_users,
-        total_products=total_products,
-        pending_products=pending_products,
-        approved_products=approved_products,
-        rejected_products=rejected_products,
-        featured_requests=featured_requests,
+        total_users=User.query.count(),
+        total_products=Product.query.count(),
+        pending_products=Product.query.filter_by(is_active=False, is_rejected=False).count(),
+        approved_products=Product.query.filter_by(is_active=True).count(),
+        rejected_products=Product.query.filter_by(is_rejected=True).count(),
+        featured_requests=Product.query.filter_by(featured_requested=True).count(),
         user=current_user()
     )
 
@@ -486,13 +474,10 @@ def approve_product(product_id):
         return redirect(url_for("admin_login"))
 
     product = Product.query.get_or_404(product_id)
-
     product.is_active = True
     product.is_rejected = False
-
     db.session.commit()
 
-    flash("Product approved")
     return redirect(url_for("admin"))
 
 
@@ -502,13 +487,10 @@ def reject_product(product_id):
         return redirect(url_for("admin_login"))
 
     product = Product.query.get_or_404(product_id)
-
     product.is_active = False
     product.is_rejected = True
-
     db.session.commit()
 
-    flash("Product rejected")
     return redirect(url_for("admin"))
 
 
@@ -518,11 +500,9 @@ def admin_delete_product(product_id):
         return redirect(url_for("admin_login"))
 
     product = Product.query.get_or_404(product_id)
-
     db.session.delete(product)
     db.session.commit()
 
-    flash("Product deleted")
     return redirect(url_for("admin"))
 
 
@@ -532,14 +512,11 @@ def feature_product(product_id):
         return redirect(url_for("admin_login"))
 
     product = Product.query.get_or_404(product_id)
-
     product.is_featured = True
     product.featured_requested = False
     product.featured_until = datetime.utcnow() + timedelta(days=30)
-
     db.session.commit()
 
-    flash("Product featured")
     return redirect(url_for("admin"))
 
 
@@ -549,13 +526,10 @@ def remove_featured(product_id):
         return redirect(url_for("admin_login"))
 
     product = Product.query.get_or_404(product_id)
-
     product.is_featured = False
     product.featured_until = None
-
     db.session.commit()
 
-    flash("Featured removed")
     return redirect(url_for("admin"))
 
 
@@ -565,11 +539,9 @@ def delete_payment(payment_id):
         return redirect(url_for("admin_login"))
 
     payment_item = Payment.query.get_or_404(payment_id)
-
     db.session.delete(payment_item)
     db.session.commit()
 
-    flash("Payment request deleted")
     return redirect(url_for("admin"))
 
 
