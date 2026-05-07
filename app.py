@@ -171,6 +171,9 @@ def login():
         return redirect(url_for("index"))
 
     return render_template("login.html", user=current_user())
+@app.route("/forgot-password")
+def forgot_password():
+    return render_template("forgot_password.html")
 
 
 @app.route("/logout")
