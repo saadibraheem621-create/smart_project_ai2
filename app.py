@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from authlib.integrations.flask_client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -20,6 +21,54 @@ app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+oauth = OAuth(app)
+
+google = oauth.register(
+    name="google",
+    client_id=os.environ.get("GOOGLE_CLIENT_ID"),
+    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={
+        "scope": "openid email profile"
+    }
+)
+@app.route("/google-login")
+def google_login():
+    redirect_uri = url_for("google_callback", _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+
+@app.route("/auth/google/callback")
+def google_callback():
+    token = google.authorize_access_token()
+    user_info = token.get("userinfo")
+
+    email = user_info.get("email")
+    name = user_info.get("name")
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        username = email.split("@")[0]
+
+        existing_username = User.query.filter_by(username=username).first()
+        if existing_username:
+            username = username + str(int(datetime.utcnow().timestamp()))
+
+        user = User(
+            full_name=name,
+            username=username,
+            whatsapp="google-login",
+            email=email,
+            password_hash=generate_password_hash(os.urandom(16).hex())
+        )
+
+        db.session.add(user)
+        db.session.commit()
+
+    session["user_id"] = user.id
+
+    return redirect(url_for("index"))
 
 CATEGORIES = [
     "Mobiles",

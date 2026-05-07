@@ -422,3 +422,20 @@ th {
 .password-box{
     position:relative;
     }
+    .google-btn{
+        display:block;
+        width:100%;
+        padding:14px;
+        margin-top:15px;
+        border-radius:12px;
+        background:white;
+        border:1px solid #ddd;
+        color:#222;
+        font-weight:bold;
+        text-decoration:none;
+        box-sizing:border-box;
+    }
+    
+    .google-btn:hover{
+        background:#f3f4f6;
+    }
