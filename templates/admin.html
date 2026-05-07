@@ -3,6 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin - Zenvy</title>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>{{ total_users }}</h3>
+            <p>Users</p>
+        </div>
+    
+        <div class="stat-card">
+            <h3>{{ total_products }}</h3>
+            <p>Total Products</p>
+        </div>
+    
+        <div class="stat-card pending">
+            <h3>{{ pending_products }}</h3>
+            <p>Pending</p>
+        </div>
+    
+        <div class="stat-card approved">
+            <h3>{{ approved_products }}</h3>
+            <p>Approved</p>
+        </div>
+    
+        <div class="stat-card rejected">
+            <h3>{{ rejected_products }}</h3>
+            <p>Rejected</p>
+        </div>
+    
+        <div class="stat-card featured">
+            <h3>{{ featured_requests }}</h3>
+            <p>Featured Requests</p>
+        </div>
+    </div>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>

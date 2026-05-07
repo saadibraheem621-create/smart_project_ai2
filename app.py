@@ -626,6 +626,35 @@ def admin_delete_product(product_id):
     flash("Product deleted")
 
     return redirect(url_for("admin"))
+    @app.route("/admin")
+def admin():
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+
+    users = User.query.order_by(User.created_at.desc()).all()
+    products = Product.query.order_by(Product.created_at.desc()).all()
+    payments = Payment.query.order_by(Payment.created_at.desc()).all()
+
+    total_users = User.query.count()
+    total_products = Product.query.count()
+    pending_products = Product.query.filter_by(is_active=False, is_rejected=False).count()
+    approved_products = Product.query.filter_by(is_active=True).count()
+    rejected_products = Product.query.filter_by(is_rejected=True).count()
+    featured_requests = Product.query.filter_by(featured_requested=True).count()
+
+    return render_template(
+        "admin.html",
+        users=users,
+        products=products,
+        payments=payments,
+        total_users=total_users,
+        total_products=total_products,
+        pending_products=pending_products,
+        approved_products=approved_products,
+        rejected_products=rejected_products,
+        featured_requests=featured_requests,
+        user=current_user()
+    )
 
 
 # =========================
