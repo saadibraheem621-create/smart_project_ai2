@@ -180,13 +180,13 @@ def google_callback():
         if existing_username:
             username = username + str(int(datetime.utcnow().timestamp()))
 
+        
         user = User(
-            full_name=name,
-            username=username,
-            whatsapp="google-login",
-            email=email,
-            password_hash=generate_password_hash(os.urandom(16).hex())
-        )
+    username=username,
+    
+    email=email,
+    password_hash=generate_password_hash(os.urandom(16).hex())
+)
 
         db.session.add(user)
         db.session.commit()
