@@ -32,60 +32,27 @@
             color:#222;
         }
 
-        .form-box input{
+        .input-box{
+            margin-bottom:15px;
+        }
+
+        .input-box input{
             width:100%;
             padding:14px;
-            margin-bottom:15px;
             border:1px solid #ddd;
             border-radius:12px;
             font-size:15px;
             box-sizing:border-box;
         }
 
-        .login-btn{
-            width:100%;
-            padding:14px;
-            border:none;
-            border-radius:12px;
-            background:#35c759;
-            color:white;
-            font-size:16px;
-            cursor:pointer;
-            font-weight:bold;
-        }
-
-        .login-btn:hover{
-            background:#28b44b;
-        }
-
-        .flash{
-            background:#ffe5e5;
-            color:#cc0000;
-            padding:10px;
-            border-radius:10px;
-            margin-bottom:15px;
-        }
-
-        .remember-box{
-            display:flex;
-            align-items:center;
-            gap:8px;
-            margin-bottom:15px;
-            font-size:14px;
-        }
-
         .password-box{
             position:relative;
-        }
-
-        .password-box input{
-            padding-right:45px;
         }
 
         .eye-btn{
             position:absolute;
             right:12px;
-            top:35%;
+            top:50%;
             transform:translateY(-50%);
             border:none;
             background:none;
@@ -93,19 +60,77 @@
             font-size:18px;
         }
 
-        .links{
+        .remember-box{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:18px;
+            font-size:14px;
+            color:#555;
+        }
+
+        .login-btn{
+            width:100%;
+            padding:14px;
+            border:none;
+            border-radius:12px;
+            background:#4ade80;
+            color:white;
+            font-size:16px;
+            font-weight:bold;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .login-btn:hover{
+            background:#22c55e;
+        }
+
+        .google-btn{
             margin-top:15px;
+            width:100%;
+            padding:14px;
+            border:none;
+            border-radius:12px;
+            background:white;
+            border:1px solid #ddd;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:10px;
+            cursor:pointer;
+            text-decoration:none;
+            color:#222;
+            font-weight:bold;
+            transition:0.3s;
+            box-sizing:border-box;
+        }
+
+        .google-btn:hover{
+            background:#f3f4f6;
+        }
+
+        .google-icon{
+            width:22px;
+            height:22px;
+        }
+
+        .links{
+            margin-top:18px;
             font-size:14px;
         }
 
         .links a{
-            color:#35c759;
+            color:#22c55e;
             text-decoration:none;
         }
 
-        .forgot{
-            display:block;
-            margin-top:10px;
+        .flash{
+            background:#fee2e2;
+            color:#dc2626;
+            padding:10px;
+            border-radius:10px;
+            margin-bottom:15px;
             font-size:14px;
         }
     </style>
@@ -113,86 +138,8 @@
 
 <body>
 
-<div class="form-box">
-
-    <h2>Login</h2>
-
-    {% with messages = get_flashed_messages() %}
-        {% for msg in messages %}
-            <p class="flash">{{ msg }}</p>
-        {% endfor %}
-    {% endwith %}
-
-    <form method="POST">
-
-        <input type="text"
-               name="email"
-               id="email"
-               placeholder="Email or Username"
-               required>
-
-        <div class="password-box">
-
-            <input type="password"
-                   name="password"
-                   id="password"
-                   placeholder="Password"
-                   required>
-
-            <button type="button"
-                    class="eye-btn"
-                    onclick="togglePassword()">
-                👁️
-            </button>
-
-        </div>
-
-        <div class="remember-box">
-            <input type="checkbox"
-                   id="remember">
-
-            <label for="remember">
-                Remember me
-            </label>
-        </div>
-
-        <button type="submit"
-                class="login-btn"
-                <a href="/google-login" class="google-btn">
-                  <img class="google-icon" src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png">
-                  Continue with Google
-              </a>
-                onclick="saveRemember()">
-            Login
-        </button>
-
-    </form>
-
-    <div class="links">
-      <p class="register-link">
-        No account?
-        <a href="/register">Create account</a>
-    </p>
-
-        <a href="/forgot-password" class="forgot">
-            Forgot password?
-        </a>
-
-        <br><br>
-
-        No account?
-        <a href="/register">
-            Create account
-        </a>
-
-    </div>
-
-</div>
-
 <script>
-
 function togglePassword() {
-
     const password = document.getElementById("password");
 
     if (password.type === "password") {
@@ -203,34 +150,114 @@ function togglePassword() {
 }
 
 window.onload = () => {
-
     const savedEmail = localStorage.getItem("saved_email");
 
     if(savedEmail){
-
         document.getElementById("email").value = savedEmail;
-
         document.getElementById("remember").checked = true;
     }
 }
 
 function saveRemember(){
-
     const remember = document.getElementById("remember");
-
     const email = document.getElementById("email").value;
 
     if(remember.checked){
-
         localStorage.setItem("saved_email", email);
-
     }else{
-
         localStorage.removeItem("saved_email");
     }
 }
-
 </script>
+
+<div class="form-box">
+
+    <h2>Login</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% for msg in messages %}
+            <div class="flash">{{ msg }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+
+        <div class="input-box">
+            <input
+                type="text"
+                name="email"
+                id="email"
+                placeholder="Email or Username"
+                required
+            >
+        </div>
+
+        <div class="input-box password-box">
+
+            <input
+                type="password"
+                name="password"
+                id="password"
+                placeholder="Password"
+                required
+            >
+
+            <button
+                type="button"
+                class="eye-btn"
+                onclick="togglePassword()"
+            >
+                👁
+            </button>
+
+        </div>
+
+        <div class="remember-box">
+
+            <label>
+                <input type="checkbox" id="remember">
+                Remember me
+            </label>
+
+        </div>
+
+        <button
+            type="submit"
+            class="login-btn"
+            onclick="saveRemember()"
+        >
+            Login
+        </button>
+
+    </form>
+
+    <!-- Google Login -->
+
+    <a href="/google-login" class="google-btn">
+
+        <img
+            class="google-icon"
+            src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+        >
+
+        Continue with Google
+
+    </a>
+
+    <div class="links">
+
+        <p>
+            No account?
+            <a href="/register">Create account</a>
+        </p>
+
+        <p>
+            <a href="/forgot_password">Forgot password?</a>
+        </p>
+
+    </div>
+
+</div>
 
 </body>
 </html>
