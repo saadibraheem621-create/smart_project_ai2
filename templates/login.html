@@ -21,6 +21,28 @@
     window.onload = () => {
         const savedEmail = localStorage.getItem("saved_email");
     
+        if (savedEmail) {
+            document.getElementById("email").value = savedEmail;
+            document.getElementById("remember").checked = true;
+        }
+    }
+    
+    function saveRemember() {
+        const remember = document.getElementById("remember");
+        const email = document.getElementById("email").value;
+    
+        if (remember.checked) {
+            localStorage.setItem("saved_email", email);
+        } else {
+            localStorage.removeItem("saved_email");
+        }
+    }
+    </script>
+    
+    // حفظ الإيميل
+    window.onload = () => {
+        const savedEmail = localStorage.getItem("saved_email");
+    
         if(savedEmail){
             document.getElementById("email").value = savedEmail;
             document.getElementById("remember").checked = true;
