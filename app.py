@@ -1,21 +1,25 @@
-import os
-from datetime import datetime, timedelta
-
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
-
+from datetime import datetime, timedelta
+import os
 
 app = Flask(__name__)
 
+# =========================
+# CONFIG
+# =========================
+
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "zenvy-secret")
+
 app.config["UPLOAD_FOLDER"] = "static/uploads"
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "12345")
 
 db_url = os.environ.get("DATABASE_URL", "sqlite:///zenvy.db")
+
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
@@ -23,139 +27,239 @@ app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
-oauth = OAuth(app)
 
+# =========================
+# GOOGLE LOGIN
+# =========================
+
+oauth = OAuth(app)
 
 google = oauth.register(
     name="google",
     client_id=os.environ.get("GOOGLE_CLIENT_ID"),
     client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email profile"},
+    client_kwargs={
+        "scope": "openid email profile"
+    }
 )
 
-
-CATEGORIES = [
-    "Mobiles",
-    "Cars",
-    "Electronics",
-    "Real Estate",
-    "Clothes",
-    "Services",
-    "Other",
-]
-
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(120))
-    email = db.Column(db.String(120), unique=True)
-    password_hash = db.Column(db.String(255))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    products = db.relationship("Product", backref="seller", lazy=True)
-
+# =========================
+# DATABASE MODEL
+# =========================
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     title = db.Column(db.String(200), nullable=False)
-    category = db.Column(db.String(100), nullable=False)
-    price = db.Column(db.String(50), nullable=False)
-    description = db.Column(db.Text)
-    image_name = db.Column(db.String(200))
-    city = db.Column(db.String(100))
 
-    is_active = db.Column(db.Boolean, default=False)
-    is_rejected = db.Column(db.Boolean, default=False)
-    is_featured = db.Column(db.Boolean, default=False)
-    featured_until = db.Column(db.DateTime)
-    featured_requested = db.Column(db.Boolean, default=False)
+    description = db.Column(db.Text, nullable=False)
+
+    price = db.Column(db.Float, nullable=False)
+
+    image = db.Column(db.String(300))
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
 
-
-class Payment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.String(120))
-    payment_type = db.Column(db.String(100))
-    amount = db.Column(db.String(50))
-    note = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in {
-        "png",
-        "jpg",
-        "jpeg",
-        "gif",
-        "webp",
-    }
-
+# =========================
+# HOME
+# =========================
 
 @app.route("/")
-def index():
-    products = Product.query.filter_by(is_active=True, is_rejected=False).order_by(
-        Product.created_at.desc()
-    ).all()
+def home():
+
+    products = Product.query.order_by(Product.id.desc()).all()
 
     return render_template(
         "index.html",
-        products=products,
-        categories=CATEGORIES,
-        user_id=session.get("user_id"),
+        products=products
     )
 
+# =========================
+# ADD PRODUCT
+# =========================
 
-@app.route("/register", methods=["GET", "POST"])
-@app.route("/create-account", methods=["GET", "POST"])
-def register():
+@app.route("/add", methods=["GET", "POST"])
+def add_product():
+
+    if session.get("admin") != True:
+        return redirect(url_for("admin_login"))
+
     if request.method == "POST":
-        username = request.form.get("username")
-        email = request.form.get("email")
-        password = request.form.get("password")
 
-        if not email or not password:
-            flash("Please fill all fields")
-            return redirect(url_for("register"))
+        title = request.form.get("title")
 
-        old_user = User.query.filter_by(email=email).first()
-        if old_user:
-            flash("Email already exists")
-            return redirect(url_for("login"))
+        description = request.form.get("description")
 
-        user = User(
-            username=username,
-            email=email,
-            password_hash=generate_password_hash(password),
+        price = request.form.get("price")
+
+        image_file = request.files.get("image")
+
+        filename = ""
+
+        if image_file and image_file.filename != "":
+
+            filename = secure_filename(image_file.filename)
+
+            save_path = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                filename
+            )
+
+            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+            image_file.save(save_path)
+
+        product = Product(
+            title=title,
+            description=description,
+            price=float(price),
+            image=filename
         )
 
-        db.session.add(user)
+        db.session.add(product)
+
         db.session.commit()
 
-        session["user_id"] = user.id
-        session["user_email"] = user.email
-        session["username"] = user.username
+        flash("Product added successfully")
 
-        return redirect(url_for("index"))
+        return redirect(url_for("home"))
 
-    return render_template("register.html")
+    return render_template("add_product.html")
 
+# =========================
+# EDIT PRODUCT
+# =========================
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
+@app.route("/edit/<int:id>", methods=["GET", "POST"])
+def edit_product(id):
+
+    if session.get("admin") != True:
+        return redirect(url_for("admin_login"))
+
+    product = Product.query.get_or_404(id)
+
     if request.method == "POST":
-        email = request.form.get("email")
+
+        product.title = request.form.get("title")
+
+        product.description = request.form.get("description")
+
+        product.price = float(request.form.get("price"))
+
+        image_file = request.files.get("image")
+
+        if image_file and image_file.filename != "":
+
+            filename = secure_filename(image_file.filename)
+
+            save_path = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                filename
+            )
+
+            image_file.save(save_path)
+
+            product.image = filename
+
+        db.session.commit()
+
+        flash("Updated successfully")
+
+        return redirect(url_for("home"))
+
+    return render_template(
+        "edit_product.html",
+        product=product
+    )
+
+# =========================
+# DELETE PRODUCT
+# =========================
+
+@app.route("/delete/<int:id>")
+def delete_product(id):
+
+    if session.get("admin") != True:
+        return redirect(url_for("admin_login"))
+
+    product = Product.query.get_or_404(id)
+
+    db.session.delete(product)
+
+    db.session.commit()
+
+    flash("Deleted successfully")
+
+    return redirect(url_for("home"))
+
+# =========================
+# ADMIN LOGIN
+# =========================
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin_login():
+
+    if request.method == "POST":
+
         password = request.form.get("password")
 
-        user = User.query.filter_by(email=email).first()
+        if password == ADMIN_PASSWORD:
 
-        if not user or not user.password_hash or not check_password_hash(
-            user.password_hash, password
-        ):
-            flash("Wrong email/username or password")
-            return redirect(url_for("login"))
+            session["admin"] = True
 
-        session["user_id"] = user.id
+            return redirect(url_for("add_product"))
+
+        flash("Wrong password")
+
+    return render_template("admin.html")
+
+# =========================
+# LOGOUT
+# =========================
+
+@app.route("/logout")
+def logout():
+
+    session.clear()
+
+    return redirect(url_for("home"))
+
+# =========================
+# GOOGLE LOGIN
+# =========================
+
+@app.route("/login/google")
+def google_login():
+
+    redirect_uri = url_for(
+        "google_callback",
+        _external=True
+    )
+
+    return google.authorize_redirect(redirect_uri)
+
+@app.route("/callback")
+def google_callback():
+
+    token = google.authorize_access_token()
+
+    user = token.get("userinfo")
+
+    session["user"] = user
+
+    return redirect(url_for("home"))
+
+# =========================
+# CREATE DB
+# =========================
+
+with app.app_context():
+    db.create_all()
+
+# =========================
+# RUN
+# =========================
+
+if __name__ == "__main__":
+    app.run(debug=True)
