@@ -279,6 +279,27 @@ def my_products():
 
     products = Product.query.filter_by(user_id=session["user_id"]).order_by(Product.id.desc()).all()
     return render_template("my_products.html", products=products)
+    @app.route("/my-products/delete/<int:product_id>")
+def delete_product(product_id):
+    product = Product.query.get_or_404(product_id)
+
+    db.session.delete(product)
+    db.session.commit()
+
+    flash("Product deleted successfully")
+    return redirect(url_for("my_products"))
+@app.route("/my-products/delete/<int:product_id>")
+def delete_product(product_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    product = Product.query.get_or_404(product_id)
+
+    if product.user_id == session["user_id"]:
+        db.session.delete(product)
+        db.session.commit()
+
+    return redirect(url_for("my_products"))    
 
 
 @app.route("/product/<int:product_id>")
