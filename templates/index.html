@@ -9,172 +9,89 @@
 
 <nav class="nav">
     <div class="logo">Zenvy</div>
-
     <div class="nav-links">
-
         <a href="/">Home</a>
 
         {% if user %}
-
-            <a href="/admin">Sell</a>
-
+            <a href="/add">Sell</a>
             <a href="/my-products">My Products</a>
-
             <a class="logout" href="/logout">Logout</a>
-
         {% else %}
-
             <a href="/login">Login</a>
-
             <a class="primary-link" href="/register">Join</a>
-
         {% endif %}
-
     </div>
 </nav>
 
 <section class="hero">
-
     <div>
-
         <span class="badge">Global Marketplace</span>
+        <h1>Sell anything.<br>Connect instantly.</h1>
+        <p>Zenvy helps people list products and contact sellers directly on WhatsApp.</p>
 
-        <h1>
-            Sell anything.<br>
-            Connect instantly.
-        </h1>
-
-        <p>
-            Zenvy helps people list products and contact sellers directly on WhatsApp.
-        </p>
-
-        <a class="hero-btn" href="/admin">
-            Start Selling
-        </a>
-
+        {% if user %}
+            <a class="hero-btn" href="/add">Start Selling</a>
+        {% else %}
+            <a class="hero-btn" href="/login">Start Selling</a>
+        {% endif %}
     </div>
-
 </section>
 
 <form class="search-box" method="GET">
-
-    <input
-        type="text"
-        name="q"
-        placeholder="Search products..."
-        value="{{ q }}"
-    >
+    <input type="text" name="q" placeholder="Search products..." value="{{ q }}">
 
     <select name="category">
-
-        <option value="">
-            All Categories
-        </option>
-
+        <option value="">All Categories</option>
         {% for c in categories %}
-
-        <option
-            value="{{ c }}"
-            {% if selected_category == c %}selected{% endif %}
-        >
-            {{ c }}
-        </option>
-
+            <option value="{{ c }}" {% if selected_category == c %}selected{% endif %}>
+                {{ c }}
+            </option>
         {% endfor %}
-
     </select>
 
-    <button type="submit">
-        Search
-    </button>
-
+    <button type="submit">Search</button>
 </form>
 
-<h2 class="section-title">
-    Latest Products
-</h2>
+<h2 class="section-title">Latest Products</h2>
 
 <section class="products">
-
     {% for product in products %}
+        <div class="card">
 
-    <div class="card">
-
-        <div class="image-box">
-
-            {% if product.image_name %}
-
-                <img src="/static/uploads/{{ p.image_name }}">
-
-            {% else %}
-
-                <div class="no-image">
-                    No Image
-                </div>
-
+            {% if product.is_ad %}
+                <div class="featured-badge">⭐ Sponsored</div>
             {% endif %}
 
-        </div>
+            <div class="image-box">
+                {% if product.image_name %}
+                    <img src="/static/uploads/{{ product.image_name }}">
+                {% else %}
+                    <div class="no-image">No Image</div>
+                {% endif %}
+            </div>
 
-        <div class="card-body">
+            <div class="card-body">
+                <span class="category">{{ product.category }}</span>
+                <h3>{{ product.title }}</h3>
+                <p class="price">{{ product.price }}</p>
+                <p class="meta">📍 {{ product.city or "Not specified" }}</p>
+                <p class="meta">👤 {{ product.seller.full_name if product.seller else "Unknown seller" }}</p>
 
-            <span class="category">
-                {{ product.category }}
-            </span>
-
-            <h3>
-                {{ product.title }}
-            </h3>
-
-            <p class="price">
-                {{ product.price }}
-            </p>
-
-            <p class="meta">
-                📍 {{ product.city or "Not specified" }}
-            </p>
-
-            <p class="meta">
-                👤 {{ product.seller.full_name }}
-            </p>
-
-            <a
-                class="details"
-                href="/product/{{ p.id }}"
-            >
-                View Details
-            </a>
+                <a class="details" href="/product/{{ product.id }}">
+                    View Details
+                </a>
+            </div>
 
         </div>
-
-    </div>
-
     {% else %}
-
-    <p class="empty">
-        No products yet
-    </p>
-
+        <p class="empty">No products yet</p>
     {% endfor %}
-
 </section>
 
 <footer>
-
-    <p>
-        © 2026 Zenvy Market
-    </p>
-
-    <a href="/admin">
-        Admin
-    </a>
-
+    <p>© 2026 Zenvy Market</p>
+    <a href="/admin">Admin</a>
 </footer>
 
 </body>
 </html>
-{% if p.is_ad %}
-<div class="featured-badge">
-⭐ Sponsored
-</div>
-{% endif %}
