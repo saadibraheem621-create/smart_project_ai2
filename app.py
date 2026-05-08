@@ -12,6 +12,7 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "zenvy-secret")
 app.config["UPLOAD_FOLDER"] = "static/uploads"
 
 db_url = os.environ.get("DATABASE_URL", "sqlite:///zenvy.db")
+
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
@@ -139,6 +140,7 @@ def register():
             return redirect(url_for("register"))
 
         old_user = User.query.filter_by(email=email).first()
+
         if old_user:
             flash("Email already exists")
             return redirect(url_for("login"))
@@ -194,6 +196,7 @@ def google_login():
         _external=True,
         _scheme="https"
     )
+
     return google.authorize_redirect(redirect_uri)
 
 
@@ -222,6 +225,7 @@ def google_callback():
             email=email,
             password_hash=generate_password_hash(os.urandom(16).hex()),
         )
+
         db.session.add(user)
         db.session.commit()
 
@@ -248,8 +252,14 @@ def add_product():
 
         if image_file and image_file.filename and allowed_file(image_file.filename):
             os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
             filename = secure_filename(image_file.filename)
-            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+            save_path = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                filename
+            )
+
             image_file.save(save_path)
 
         product = Product(
@@ -268,9 +278,13 @@ def add_product():
         db.session.commit()
 
         flash("Product added successfully")
+
         return redirect(url_for("my_products"))
 
-    return render_template("add_product.html", categories=CATEGORIES)
+    return render_template(
+        "add_product.html",
+        categories=CATEGORIES
+    )
 
 
 @app.route("/my-products")
@@ -279,8 +293,13 @@ def my_products():
         return redirect(url_for("login"))
 
     products = Product.query.filter_by(
-        user_id=session["user_id"]).order_by(Product.id.desc()).all()
-    return render_template("my_products.html", products=products)
+        user_id=session["user_id"]
+    ).order_by(Product.id.desc()).all()
+
+    return render_template(
+        "my_products.html",
+        products=products
+    )
 
 
 @app.route("/my-products/delete/<int:product_id>")
@@ -300,7 +319,11 @@ def delete_product(product_id):
 @app.route("/product/<int:product_id>")
 def product_details(product_id):
     product = Product.query.get_or_404(product_id)
-    return render_template("product.html", product=product)
+
+    return render_template(
+        "product.html",
+        product=product
+    )
 
 
 @app.route("/edit-product/<int:product_id>", methods=["GET", "POST"])
@@ -324,31 +347,29 @@ def edit_product(product_id):
 
         if image_file and image_file.filename and allowed_file(image_file.filename):
             os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
             filename = secure_filename(image_file.filename)
-            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+            save_path = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                filename
+            )
+
             image_file.save(save_path)
+
             product.image_name = filename
 
         db.session.commit()
 
         flash("Product updated successfully")
+
         return redirect(url_for("my_products"))
 
-    return render_template("edit_product.html", product=product, categories=CATEGORIES)
-
-
-@app.route("/delete-product/<int:product_id>")
-def delete_product(product_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    product = Product.query.get_or_404(product_id)
-
-    if product.user_id == session["user_id"]:
-        db.session.delete(product)
-        db.session.commit()
-
-    return redirect(url_for("my_products"))
+    return render_template(
+        "edit_product.html",
+        product=product,
+        categories=CATEGORIES
+    )
 
 
 @app.route("/admin", methods=["GET", "POST"])
@@ -373,7 +394,11 @@ def admin_dashboard():
     products = Product.query.order_by(Product.id.desc()).all()
     payments = Payment.query.order_by(Payment.id.desc()).all()
 
-    return render_template("admin.html", products=products, payments=payments)
+    return render_template(
+        "admin.html",
+        products=products,
+        payments=payments
+    )
 
 
 @app.route("/admin/approve/<int:product_id>")
@@ -382,8 +407,10 @@ def approve_product(product_id):
         return redirect(url_for("admin_login"))
 
     product = Product.query.get_or_404(product_id)
+
     product.is_active = True
     product.is_rejected = False
+
     db.session.commit()
 
     return redirect(url_for("admin_dashboard"))
@@ -395,8 +422,10 @@ def reject_product(product_id):
         return redirect(url_for("admin_login"))
 
     product = Product.query.get_or_404(product_id)
+
     product.is_active = False
     product.is_rejected = True
+
     db.session.commit()
 
     return redirect(url_for("admin_dashboard"))
@@ -408,6 +437,7 @@ def admin_delete_product(product_id):
         return redirect(url_for("admin_login"))
 
     product = Product.query.get_or_404(product_id)
+
     db.session.delete(product)
     db.session.commit()
 
@@ -428,6 +458,7 @@ def payment():
         db.session.commit()
 
         flash("Payment request sent")
+
         return redirect(url_for("home"))
 
     return render_template("payment.html")
@@ -436,6 +467,7 @@ def payment():
 @app.route("/init-db")
 def init_db():
     db.create_all()
+
     return "Database initialized successfully"
 
 
