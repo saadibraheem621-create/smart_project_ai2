@@ -6,14 +6,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
 from datetime import datetime, timedelta
-# حذف صلاحية الإعلانات المنتهية
+
+app = Flask(__name__)
 products = query.order_by(
     Product.is_ad.desc(),
     Product.id.desc()
 ).all()
-
-app = Flask(__name__)
-
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "zenvy-secret")
 app.config["UPLOAD_FOLDER"] = "static/uploads"
 
