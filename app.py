@@ -5,6 +5,21 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
+from datetime import timedelta
+# حذف صلاحية الإعلانات المنتهية
+expired_ads = Product.query.filter(
+    Product.is_ad == True,
+    Product.ad_expire < datetime.utcnow()
+).all()
+
+for p in expired_ads:
+    p.is_ad = False
+
+db.session.commit()
+products = query.order_by(
+    Product.is_ad.desc(),
+    Product.id.desc()
+).all()
 
 app = Flask(__name__)
 
@@ -462,6 +477,28 @@ def payment():
         return redirect(url_for("home"))
 
     return render_template("payment.html")
+
+
+@app.route("/promote/<int:product_id>")
+def promote_product(product_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    product = Product.query.get_or_404(product_id)
+
+    if product.user_id != session["user_id"]:
+        return redirect(url_for("my_products"))
+
+    # تفعيل الإعلان لمدة 7 أيام
+    product.is_ad = True
+    product.ad_expire = datetime.utcnow() + timedelta(days=7)
+
+    db.session.commit()
+
+    flash("Your ad is now featured for 7 days")
+
+    return redirect(url_for("my_products"))
 
 
 @app.route("/init-db")

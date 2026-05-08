@@ -469,3 +469,12 @@ th {
         height:22px !important;
         object-fit:contain;
     }
+    .featured-badge{
+        background:gold;
+        color:black;
+        display:inline-block;
+        padding:6px 12px;
+        border-radius:20px;
+        font-weight:bold;
+        margin-bottom:10px;
+    }
