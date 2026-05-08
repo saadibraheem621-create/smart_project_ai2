@@ -129,7 +129,8 @@ def home():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        full_name = request.form.get("full_name") or request.form.get("username")
+        full_name = request.form.get(
+            "full_name") or request.form.get("username")
         email = request.form.get("email")
         password = request.form.get("password")
 
@@ -189,10 +190,10 @@ def logout():
 @app.route("/google-login")
 def google_login():
     redirect_uri = url_for(
-    "google_callback",
-    _external=True,
-    _scheme="https"
-)
+        "google_callback",
+        _external=True,
+        _scheme="https"
+    )
     return google.authorize_redirect(redirect_uri)
 
 
@@ -277,17 +278,11 @@ def my_products():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    products = Product.query.filter_by(user_id=session["user_id"]).order_by(Product.id.desc()).all()
+    products = Product.query.filter_by(
+        user_id=session["user_id"]).order_by(Product.id.desc()).all()
     return render_template("my_products.html", products=products)
-    @app.route("/my-products/delete/<int:product_id>")
-def delete_product(product_id):
-    product = Product.query.get_or_404(product_id)
 
-    db.session.delete(product)
-    db.session.commit()
 
-    flash("Product deleted successfully")
-    return redirect(url_for("my_products"))
 @app.route("/my-products/delete/<int:product_id>")
 def delete_product(product_id):
     if "user_id" not in session:
@@ -299,7 +294,21 @@ def delete_product(product_id):
         db.session.delete(product)
         db.session.commit()
 
-    return redirect(url_for("my_products"))    
+    return redirect(url_for("my_products"))
+
+
+@app.route("/my-products/delete/<int:product_id>")
+def delete_product(product_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    product = Product.query.get_or_404(product_id)
+
+    if product.user_id == session["user_id"]:
+        db.session.delete(product)
+        db.session.commit()
+
+    return redirect(url_for("my_products"))
 
 
 @app.route("/product/<int:product_id>")
