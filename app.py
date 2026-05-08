@@ -107,29 +107,10 @@ def allowed_file(filename):
 
 @app.route("/")
 def home():
-
-    expired_ads = Product.query.filter(
-        Product.is_ad == True,
-        Product.ad_expire < datetime.utcnow()
-    ).all()
-
-    for p in expired_ads:
-        p.is_ad = False
-        p.ad_expire = None
-
-    db.session.commit()
-
     q = request.args.get("q", "")
     selected_category = request.args.get("category", "")
 
-    query = Product.query.filter_by(
-        is_active=True,
-        is_rejected=False
-    )
-    products = query.order_by(
-        Product.is_ad.desc(),
-        Product.id.desc()
-    ).all()
+    query = Product.query.filter_by(is_active=True, is_rejected=False)
 
     if q:
         query = query.filter(Product.title.ilike(f"%{q}%"))
@@ -137,10 +118,7 @@ def home():
     if selected_category:
         query = query.filter_by(category=selected_category)
 
-    products = query.order_by(
-        Product.is_ad.desc(),
-        Product.id.desc()
-    ).all()
+    products = query.order_by(Product.id.desc()).all()
 
     return render_template(
         "index.html",
