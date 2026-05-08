@@ -188,7 +188,11 @@ def logout():
 
 @app.route("/google-login")
 def google_login():
-    redirect_uri = url_for("google_callback", _external=True)
+    redirect_uri = url_for(
+    "google_callback",
+    _external=True,
+    _scheme="https"
+)
     return google.authorize_redirect(redirect_uri)
 
 
