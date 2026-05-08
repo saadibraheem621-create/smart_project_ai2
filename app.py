@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from authlib.integrations.flask_client import OAuth
 from datetime import datetime, timedelta
 from fLask_login import current_user, login_required
 import os
