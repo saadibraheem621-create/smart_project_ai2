@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
-from datetime import timedelta
+from datetime import datetime, timedelta
 # حذف صلاحية الإعلانات المنتهية
 expired_ads = Product.query.filter(
     Product.is_ad == True,
@@ -82,6 +82,8 @@ class Product(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     is_rejected = db.Column(db.Boolean, default=False)
     is_featured = db.Column(db.Boolean, default=False)
+    is_ad = db.Column(db.Boolean, default=False)
+    ad_expire = db.Column(db.DateTime, nullable=True)
     featured_requested = db.Column(db.Boolean, default=False)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
