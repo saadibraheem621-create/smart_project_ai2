@@ -8,10 +8,6 @@ from authlib.integrations.flask_client import OAuth
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
-products = query.order_by(
-    Product.is_ad.desc(),
-    Product.id.desc()
-).all()
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "zenvy-secret")
 app.config["UPLOAD_FOLDER"] = "static/uploads"
 
@@ -130,6 +126,10 @@ def home():
         is_active=True,
         is_rejected=False
     )
+    products = query.order_by(
+        Product.is_ad.desc(),
+        Product.id.desc()
+    ).all()
 
     if q:
         query = query.filter(Product.title.ilike(f"%{q}%"))
