@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
 from datetime import datetime, timedelta
+from flask_login import current_user, login_required
 import os
 
 app = Flask(__name__)
@@ -59,7 +60,7 @@ class User(db.Model):
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
-    title = db.Column(db.String(150), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
     category = db.Column(db.String(100), nullable=False)
     price = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text)
@@ -266,10 +267,19 @@ def add_product():
     return render_template("add_product.html", categories=CATEGORIES, user=user)
 
 
-@app.route("/product/<int:product_id>")
-def product_details(product_id):
-    product = Product.query.get_or_404(product_id)
-    return render_template("product.html", product=product, user=current_user())
+@app.route("/my-products")
+@login_required
+def my_products():
+    try:
+        products = Product.query.filter_by(user_id=current_user.id).all()
+        return render_template(
+            "my_products.html",
+            products=products
+        )
+
+    except Exception as e:
+        print("MY PRODUCTS ERROR:", e)
+        return f"Error: {str(e)}"
 
 
 @app.route("/my-products")
@@ -508,3 +518,5 @@ with app.app_context():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+ with app.app_context():
+    db.create_all()
