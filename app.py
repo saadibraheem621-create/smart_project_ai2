@@ -497,6 +497,20 @@ def init_db():
 
 with app.app_context():
     db.create_all()
+@app.route("/fix-db")
+def fix_db():
+    db.session.execute(db.text("""
+        ALTER TABLE product
+        ADD COLUMN IF NOT EXISTS is_ad BOOLEAN DEFAULT FALSE;
+    """))
+
+    db.session.execute(db.text("""
+        ALTER TABLE product
+        ADD COLUMN IF NOT EXISTS ad_expire TIMESTAMP;
+    """))
+
+    db.session.commit()
+    return "Database fixed successfully"
 
 
 if __name__ == "__main__":
