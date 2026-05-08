@@ -7,15 +7,6 @@ from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
 from datetime import datetime, timedelta
 # حذف صلاحية الإعلانات المنتهية
-expired_ads = Product.query.filter(
-    Product.is_ad == True,
-    Product.ad_expire < datetime.utcnow()
-).all()
-
-for p in expired_ads:
-    p.is_ad = False
-
-db.session.commit()
 products = query.order_by(
     Product.is_ad.desc(),
     Product.id.desc()
@@ -122,12 +113,24 @@ def allowed_file(filename):
 
 @app.route("/")
 def home():
-    q = request.args.get("q", "")
-    selected_category = request.args.get("category", "")
 
-    query = Product.query.filter_by(is_active=True, is_rejected=False)
 
-    if q:
+    # حذف صلاحية الإعلانات المنتهية
+  expired_ads = Product.query.filter(
+    Product.is_ad == True,
+    Product.ad_expire < datetime.utcnow()
+).all()
+
+for p in expired_ads:
+    p.is_ad = False
+
+db.session.commit()
+q = request.args.get("q", "")
+ selected_category = request.args.get("category", "")
+
+  query = Product.query.filter_by(is_active=True, is_rejected=False)
+
+   if q:
         query = query.filter(Product.title.ilike(f"%{q}%"))
 
     if selected_category:
