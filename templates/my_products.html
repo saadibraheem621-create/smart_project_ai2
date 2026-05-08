@@ -24,9 +24,9 @@
 <section class="products">
     {% for p in products %}
     <div class="card">
-        {% if product.is_active %}
+        {% if p.is_active %}
     <span class="active">Approved</span>
-{% elif product.is_rejected %}
+{% elif p.is_rejected %}
     <span class="hidden">Rejected</span>
 {% else %}
     <span class="pending-badge">Pending Review</span>
