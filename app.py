@@ -65,15 +65,51 @@ class Product(db.Model):
 # HOME
 # =========================
 
+@app.route("/login")
+def login():
+    pass
+
+
 @app.route("/")
 def home():
 
-    products = Product.query.order_by(Product.id.desc()).all()
+    q = request.args.get("q", "")
+    selected_category = request.args.get("category", "")
+
+    query = Product.query
+
+    if q:
+        query = query.filter(Product.title.ilike(f"%{q}%"))
+
+    if selected_category:
+        query = query.filter_by(category=selected_category)
+
+    products = query.order_by(Product.id.desc()).all()
+
+    categories = [
+        "Cars",
+        "Phones",
+        "Electronics",
+        "Clothes",
+        "Home",
+        "Other"
+    ]
+
+    user = None
 
     return render_template(
         "index.html",
-        products=products
+        products=products,
+        q=q,
+        categories=categories,
+        selected_category=selected_category,
+        user=user
     )
+
+
+@app.route("/add")
+def add():
+    pass
 
 # =========================
 # ADD PRODUCT
