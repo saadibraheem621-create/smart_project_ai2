@@ -6,6 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
+import replicate
+import requests
+import uuid
 
 app = Flask(__name__)
 
@@ -90,6 +93,54 @@ def current_user():
     if "user_id" not in session:
         return None
     return User.query.get(session["user_id"])
+
+
+def generate_ai_image(prompt):
+
+    output = replicate.run(
+        "black-forest-labs/flux-schnell",
+        input={
+            "prompt": prompt
+        }
+    )
+
+    image_url = output[0]
+
+    return image_url
+
+
+def generate_ai_product_image(title, description):
+    prompt = f"""
+    Professional marketplace product photo.
+    Product: {title}.
+    Description: {description}.
+    Clean background, realistic, high quality.
+    """
+
+    output = replicate.run(
+        "black-forest-labs/flux-schnell",
+        input={
+            "prompt": prompt,
+            "num_outputs": 1,
+            "aspect_ratio": "1:1",
+            "output_format": "webp"
+        }
+    )
+
+    image_url = output[0]
+
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+    filename = f"ai_{uuid.uuid4().hex}.webp"
+    save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+    response = requests.get(image_url, timeout=60)
+    response.raise_for_status()
+
+    with open(save_path, "wb") as f:
+        f.write(response.content)
+
+    return filename
 
 
 @app.context_processor
@@ -278,12 +329,59 @@ def add_product():
 
         image_file = request.files.get("image")
         filename = ""
+        generate_ai_image = request.form.get("generate_ai_image") == "on"
 
         if image_file and image_file.filename and allowed_file(image_file.filename):
             os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
             filename = secure_filename(image_file.filename)
-            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+            save_path = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                filename
+            )
+
             image_file.save(save_path)
+
+        # AI Image Generation
+if generate_ai_image and not filename and description:
+
+    try:
+        output = replicate.run(
+            "stability-ai/sdxl:39ed52f2a78e934b46c13a0d5d5f7b2c6fdb8d7f7c8ad107ac2ff37c4f0a4d7c",
+            input={
+                "prompt": description,
+                "width": 1024,
+                "height": 1024,
+                "num_outputs": 1
+            }
+        )
+
+        image_url = output[0]
+
+        response = requests.get(image_url)
+
+        ai_filename = f"ai_{uuid.uuid4().hex}.png"
+
+        save_path = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            ai_filename
+        )
+
+        with open(save_path, "wb") as f:
+            f.write(response.content)
+
+        filename = ai_filename
+
+    except Exception as e:
+        print("AI IMAGE ERROR:", e)
+
+        if not filename and generate_ai_image:
+            try:
+                filename = generate_ai_product_image(title, description)
+            except Exception as e:
+                print("AI IMAGE ERROR:", e)
+                flash("Product added, but AI image generation failed")
 
         is_featured = request.form.get("is_featured") == "on"
 
