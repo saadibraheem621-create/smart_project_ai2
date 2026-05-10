@@ -55,6 +55,11 @@
             Edit
         </a>|
         <a class="delete" href="/my-products/delete/{{ p.id }}"
+        products = query.order_by(
+    Product.is_featured.desc(),
+    Product.id.desc()
+  all()
+  ).
 onclick="return confirm('Delete this product?')">Delete</a>
     </div>
     {% else %}

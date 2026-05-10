@@ -104,13 +104,15 @@ def allowed_file(filename):
         "webp",
     ]
 
-
 @app.route("/")
 def home():
     q = request.args.get("q", "")
     selected_category = request.args.get("category", "")
 
-    query = Product.query.filter_by(is_active=True, is_rejected=False)
+    query = Product.query.filter_by(
+        is_active=True,
+        is_rejected=False
+    )
 
     if q:
         query = query.filter(Product.title.ilike(f"%{q}%"))
@@ -118,23 +120,25 @@ def home():
     if selected_category:
         query = query.filter_by(category=selected_category)
 
-    products = query.order_by(Product.id.desc()).all()
+    featured_products = Product.query.filter_by(
+        is_featured=True,
+        is_active=True,
+        is_rejected=False
+    ).order_by(Product.id.desc()).all()
+
+    products = query.order_by(
+        Product.is_featured.desc(),
+        Product.id.desc()
+    ).all()
 
     return render_template(
         "index.html",
         products=products,
+        featured_products=featured_products,
         categories=CATEGORIES,
         selected_category=selected_category,
-        q=q,
+        q=q
     )
-        featured_products = Product.query.filter_by(
-    is_featured=True
-).all()
-
-products = query.order_by(
-    Product.id.desc()
-).all()
-
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
