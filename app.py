@@ -289,7 +289,7 @@ product = Product(
     is_rejected=False,
 )
 
-        db.session.add(product)
+    db.session.add(product)
         db.session.commit()
 
         flash("Product added successfully")
