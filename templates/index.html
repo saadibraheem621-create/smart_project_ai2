@@ -1,121 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Zenvy Market</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
+    {% for p in featured_products %}
+    <div class="sponsored-card">
 
-<nav class="nav">
-    <div class="logo">Zenvy</div>
-    <div class="nav-links">
-        <a href="/">Home</a>
+        <img src="{{ url_for('static', filename='uploads/' + p.image_name) }}">
 
-        {% if user %}
+        <h3>{{ p.title }}</h3>
+
+        <p>{{ p.price }}</p>
+
+        <span class="badge">Sponsored</span>
+
+    </div>
+    {% endfor %}
+
+    <nav class="nav">
+        <div class="logo">Zenvy</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+
+            {% if user %}
             <a href="/add">Sell</a>
             <a href="/my-products">My Products</a>
             <a class="logout" href="/logout">Logout</a>
-        {% else %}
+            {% else %}
             <a href="/login">Login</a>
             <a class="primary-link" href="/register">Join</a>
-        {% endif %}
-    </div>
-</nav>
+            {% endif %}
+        </div>
+    </nav>
 
-<section class="hero">
-    <div>
-        <span class="badge">Global Marketplace</span>
-        <h1>Sell anything.<br>Connect instantly.</h1>
-        <p>Zenvy helps people list products and contact sellers directly on WhatsApp.</p>
+    <section class="hero">
+        <div>
+            <span class="badge">Global Marketplace</span>
+            <h1>Sell anything.<br>Connect instantly.</h1>
+            <p>Zenvy helps people list products and contact sellers directly on WhatsApp.</p>
 
-        {% if user %}
+            {% if user %}
             <a class="hero-btn" href="/add">Start Selling</a>
-        {% else %}
+            {% else %}
             <a class="hero-btn" href="/login">Start Selling</a>
-        {% endif %}
-    </div>
-</section>
+            {% endif %}
+        </div>
+    </section>
 
-<form class="search-box" method="GET">
-    <input type="text" name="q" placeholder="Search products..." value="{{ q }}">
+    <form class="search-box" method="GET">
+        <input type="text" name="q" placeholder="Search products..." value="{{ q }}">
 
-    <select name="category">
-        <option value="">All Categories</option>
-        {% for c in categories %}
-            <option value="{{ c }}" {% if selected_category == c %}selected{% endif %}>
+        <select name="category">
+            <option value="">All Categories</option>
+            {% for c in categories %}
+            <option value="{{ c }}" {% if selected_category==c %}selected{% endif %}>
                 {{ c }}
             </option>
-        {% endfor %}
-    </select>
+            {% endfor %}
+        </select>
 
-    <button type="submit">Search</button>
-</form>
-{% if featured_products %}
+        <button type="submit">Search</button>
+    </form>
+    {% if featured_products %}
 
-<h2 class="section-title">
-    ⭐ Sponsored Ads
-</h2>
+    <h2 class="section-title">
+        ⭐ Sponsored Ads
+    </h2>
 
-<section class="products">
+    <section class="products">
 
-    {% for product in featured_products %}
+        {% for product in featured_products %}
 
-    <div class="card sponsored-card">
+        <div class="card sponsored-card">
 
-        <div class="image-box">
+            <div class="image-box">
 
-            {% if product.image_name %}
+                {% if product.image_name %}
                 <img src="/static/uploads/{{ product.image_name }}">
-            {% endif %}
+                {% endif %}
+
+            </div>
+
+            <div class="card-body">
+
+                <span class="featured-badge">
+                    ⭐ Sponsored
+                </span>
+
+                <h3>{{ product.title }}</h3>
+
+                <p class="price">
+                    {{ product.price }}
+                </p>
+
+                <a class="details" href="/product/{{ product.id }}">
+                    View Details
+                </a>
+
+            </div>
 
         </div>
 
-        <div class="card-body">
+        {% endfor %}
 
-            <span class="featured-badge">
-                ⭐ Sponsored
-            </span>
+    </section>
 
-            <h3>{{ product.title }}</h3>
+    {% endif %}
 
-            <p class="price">
-                {{ product.price }}
-            </p>
+    <h2 class="section-title">Latest Products</h2>
 
-            <a class="details"
-               href="/product/{{ product.id }}">
-                View Details
-            </a>
-
-        </div>
-
-    </div>
-
-    {% endfor %}
-
-</section>
-
-{% endif %}
-
-<h2 class="section-title">Latest Products</h2>
-
-<section class="products">
-    {% for product in products %}
+    <section class="products">
+        {% for product in products %}
         <div class="card">
 
             {% if product.is_ad %}
-                <div class="featured-badge">⭐ Sponsored</div>
+            <div class="featured-badge">⭐ Sponsored</div>
             {% endif %}
             {% if product.is_featured %}
             <div class="featured-badge">⭐ Sponsored</div>
-        {% endif %}
+            {% endif %}
 
             <div class="image-box">
                 {% if product.image_name %}
-                    <img src="/static/uploads/{{ product.image_name }}">
+                <img src="/static/uploads/{{ product.image_name }}">
                 {% else %}
-                    <div class="no-image">No Image</div>
+                <div class="no-image">No Image</div>
                 {% endif %}
             </div>
 
@@ -132,15 +146,16 @@
             </div>
 
         </div>
-    {% else %}
+        {% else %}
         <p class="empty">No products yet</p>
-    {% endfor %}
-</section>
+        {% endfor %}
+    </section>
 
-<footer>
-    <p>© 2026 Zenvy Market</p>
-    <a href="/admin">Admin</a>
-</footer>
+    <footer>
+        <p>© 2026 Zenvy Market</p>
+        <a href="/admin">Admin</a>
+    </footer>
 
 </body>
+
 </html>

@@ -1,71 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>My Products - Zenvy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
     <a class="promote-btn" href="/promote/{{ p.id }}">
         🚀 Promote Ad
-        </a>
+    </a>
 
-<nav class="nav">
-    <h2>Zenvy</h2>
-    <div>
-        <a href="/">Home</a>
-        <a href="/add">Add Product</a>
-        <a href="/logout">Logout</a>
+    <nav class="nav">
+        <h2>Zenvy</h2>
+        <div>
+            <a href="/">Home</a>
+            <a href="/add">Add Product</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="admin-header">
+        <h1>My Products</h1>
+        <a class="btn" href="/add">Add New Product</a>
     </div>
-</nav>
 
-<div class="admin-header">
-    <h1>My Products</h1>
-    <a class="btn" href="/add">Add New Product</a>
-</div>
-
-<section class="products">
-    {% for p in products %}
-    <div class="card">
-        {% if p.is_active %}
-    <span class="active">Approved</span>
-{% elif p.is_rejected %}
-    <span class="hidden">Rejected</span>
-{% else %}
-    <span class="pending-badge">Pending Review</span>
-{% endif %}
-        {% if p.image_name %}
+    <section class="products">
+        {% for p in products %}
+        <div class="card">
+            {% if p.is_active %}
+            <span class="active">Approved</span>
+            {% elif p.is_rejected %}
+            <span class="hidden">Rejected</span>
+            {% else %}
+            <span class="pending-badge">Pending Review</span>
+            {% endif %}
+            {% if p.image_name %}
             <img src="/static/uploads/{{ p.image_name }}">
-        {% else %}
+            {% else %}
             <div class="no-image">No Image</div>
-        {% endif %}
+            {% endif %}
 
-        <h3>{{ p.title }}</h3>
-        <p class="price">{{ p.price }}</p>
+            <h3>{{ p.title }}</h3>
+            <p class="price">{{ p.price }}</p>
 
-        {% if p.is_active %}
+            {% if p.is_active %}
             <p class="active">Visible</p>
             <a href="/my-products/hide/{{ p.id }}">Hide</a>
-        {% else %}
+            {% else %}
             <p class="hidden">Hidden</p>
             <a href="/my-products/show/{{ p.id }}">Show</a>
-        {% endif %}
+            {% endif %}
 
-        <a class="edit-btn" href="/my-products/edit/{{ p.id }}">
-            Edit
-        </a>|
-        <a class="delete" href="/my-products/delete/{{ p.id }}"
-        products = query.order_by(
-    Product.is_featured.desc(),
-    Product.id.desc()
-  all()
-  ).
-onclick="return confirm('Delete this product?')">Delete</a>
-    </div>
-    {% else %}
-    <p class="empty">You have no products yet</p>
-    {% endfor %}
-</section>
+            <a class="edit-btn" href="/my-products/edit/{{ p.id }}">
+                Edit
+            </a>|
+            {% if not p.is_ad %}
+            <a class="btn featured" href="/promote/{{ p.id }}">
+                Promote Ad
+            </a>
+            {% endif %}
+            <a class="delete" href="/my-products/delete/{{ p.id }}" products=query.order_by( Product.is_featured.desc(),
+                Product.id.desc() all() ). onclick="return confirm('Delete this product?')">Delete</a>
+        </div>
+        {% else %}
+        <p class="empty">You have no products yet</p>
+        {% endfor %}
+    </section>
 
 </body>
+
 </html>
