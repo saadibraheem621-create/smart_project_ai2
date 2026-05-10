@@ -276,6 +276,7 @@ def add_product():
             image_file.save(save_path)
 
         product = Product(
+            is_featured = request.form.get("is_featured") == "on"
             title=title,
             category=category,
             price=price,
