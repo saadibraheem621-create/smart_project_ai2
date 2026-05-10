@@ -144,6 +144,7 @@ def home():
     ).order_by(Product.id.desc()).all()
 
     products = query.order_by(
+        Product.is_ad.desc(),
         Product.is_featured.desc(),
         Product.id.desc()
     ).all()

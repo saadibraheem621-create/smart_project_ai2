@@ -83,7 +83,7 @@
         }
 
         .product-image {
-            height: 210px;
+            height: 260px;
             background: #e5e7eb;
             display: flex;
             align-items: center;
@@ -183,7 +183,13 @@
             padding: 60px;
             border-radius: 25px;
             text-align: center;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+            transition: .3s;
+            border: 1px solid #eee;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
         }
 
         @media(max-width:700px) {
