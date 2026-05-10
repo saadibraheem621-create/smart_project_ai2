@@ -3,71 +3,257 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Products - Zenvy</title>
-    <link rel="stylesheet" href="/static/style.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f7fb;
+            margin: 0;
+            padding: 0;
+        }
+
+        .topbar {
+            background: #0f172a;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 30px 0;
+        }
+
+        .title {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #111827;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+            transition: .3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: #eee;
+        }
+
+        .product-content {
+            padding: 20px;
+        }
+
+        .product-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #111827;
+        }
+
+        .product-price {
+            color: #16a34a;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .product-description {
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .badge.pending {
+            background: #f59e0b;
+        }
+
+        .badge.approved {
+            background: #16a34a;
+        }
+
+        .badge.rejected {
+            background: #dc2626;
+        }
+
+        .badge.featured {
+            background: #2563eb;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .btn-edit {
+            background: #2563eb;
+        }
+
+        .btn-delete {
+            background: #dc2626;
+        }
+
+        .btn-promote {
+            background: #16a34a;
+        }
+
+        .empty {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+        }
+    </style>
 </head>
 
 <body>
-    <a class="promote-btn" href="/promote/{{ p.id }}">
-        🚀 Promote Ad
-    </a>
 
-    <nav class="nav">
-        <h2>Zenvy</h2>
+    <div class="topbar">
+        <div>
+            <a href="/">Zenvy</a>
+        </div>
+
         <div>
             <a href="/">Home</a>
             <a href="/add">Add Product</a>
             <a href="/logout">Logout</a>
         </div>
-    </nav>
-
-    <div class="admin-header">
-        <h1>My Products</h1>
-        <a class="btn" href="/add">Add New Product</a>
     </div>
 
-    <section class="products">
-        {% for p in products %}
-        <div class="card">
-            {% if p.is_active %}
-            <span class="active">Approved</span>
-            {% elif p.is_rejected %}
-            <span class="hidden">Rejected</span>
-            {% else %}
-            <span class="pending-badge">Pending Review</span>
-            {% endif %}
-            {% if p.image_name %}
-            <img src="/static/uploads/{{ p.image_name }}">
-            {% else %}
-            <div class="no-image">No Image</div>
-            {% endif %}
+    <div class="container">
 
-            <h3>{{ p.title }}</h3>
-            <p class="price">{{ p.price }}</p>
+        <h1 class="title">My Products</h1>
 
-            {% if p.is_active %}
-            <p class="active">Visible</p>
-            <a href="/my-products/hide/{{ p.id }}">Hide</a>
-            {% else %}
-            <p class="hidden">Hidden</p>
-            <a href="/my-products/show/{{ p.id }}">Show</a>
-            {% endif %}
+        {% if products %}
 
-            <a class="edit-btn" href="/my-products/edit/{{ p.id }}">
-                Edit
-            </a>|
-            {% if not p.is_ad %}
-            <a class="btn featured" href="/promote/{{ p.id }}">
-                Promote Ad
-            </a>
-            {% endif %}
-            <a class="delete" href="/my-products/delete/{{ p.id }}" products=query.order_by( Product.is_featured.desc(),
-                Product.id.desc() all() ). onclick="return confirm('Delete this product?')">Delete</a>
+        <div class="products-grid">
+
+            {% for p in products %}
+
+            <div class="product-card">
+
+                {% if p.image_name %}
+                <img class="product-image" src="{{ url_for('static', filename='uploads/' + p.image_name) }}">
+                {% else %}
+                <div class="product-image"></div>
+                {% endif %}
+
+                <div class="product-content">
+
+                    <h2 class="product-title">
+                        {{ p.title }}
+                    </h2>
+
+                    <div class="product-price">
+                        {{ p.price }}
+                    </div>
+
+                    <div class="product-description">
+                        {{ p.description }}
+                    </div>
+
+                    {% if p.is_active %}
+                    <span class="badge approved">Approved</span>
+                    {% elif p.is_rejected %}
+                    <span class="badge rejected">Rejected</span>
+                    {% else %}
+                    <span class="badge pending">Pending</span>
+                    {% endif %}
+
+                    {% if p.is_ad %}
+                    <span class="badge featured">
+                        Sponsored Ad
+                    </span>
+                    {% endif %}
+
+                    <div class="actions">
+
+                        <a class="btn btn-edit" href="/edit-product/{{ p.id }}">
+                            Edit
+                        </a>
+
+                        <a class="btn btn-delete" href="/my-products/delete/{{ p.id }}"
+                            onclick="return confirm('Delete this product?')">
+                            Delete
+                        </a>
+
+                        {% if not p.is_ad %}
+                        <a class="btn btn-promote" href="/promote/{{ p.id }}">
+                            Promote Ad
+                        </a>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
         </div>
+
         {% else %}
-        <p class="empty">You have no products yet</p>
-        {% endfor %}
-    </section>
+
+        <div class="empty">
+            <h2>No products yet</h2>
+            <p>Add your first product now.</p>
+        </div>
+
+        {% endif %}
+
+    </div>
 
 </body>
 
