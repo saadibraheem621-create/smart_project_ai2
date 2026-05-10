@@ -274,19 +274,20 @@ def add_product():
             )
 
             image_file.save(save_path)
+    is_featured = request.form.get("is_featured") == "on"
 
-        product = Product(
-            is_featured = request.form.get("is_featured") == "on"
-            title=title,
-            category=category,
-            price=price,
-            description=description,
-            image_name=filename,
-            city=city,
-            user_id=session["user_id"],
-            is_active=True,
-            is_rejected=False,
-        )
+product = Product(
+    title=title,
+    category=category,
+    price=price,
+    description=description,
+    image_name=filename,
+    city=city,
+    user_id=session["user_id"],
+    is_featured=is_featured,
+    is_active=True,
+    is_rejected=False,
+)
 
         db.session.add(product)
         db.session.commit()
