@@ -1,48 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Add Product - Zenvy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
 
-<nav class="nav">
-    <h2>Zenvy</h2>
-    <div>
-        <a href="/">Home</a>
-        <a href="/my-products">My Products</a>
-        <a href="/logout">Logout</a>
+    <nav class="nav">
+        <h2>Zenvy</h2>
+        <div>
+            <a href="/">Home</a>
+            <a href="/my-products">My Products</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="form-box">
+        <h2>Add Product</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            <input name="title" placeholder="Product title" required>
+            <input name="price" placeholder="Price" required>
+            <input name="city" placeholder="City" required>
+
+            <select name="category" required>
+                <option value="">Choose category</option>
+                {% for c in categories %}
+                <option>{{ c }}</option>
+                {% endfor %}
+            </select>
+
+            <textarea name="description" placeholder="Description" rows="5"></textarea>
+
+            <label>Product Image</label>
+            <input type="file" name="image">
+            <label class="checkbox">
+                <input type="checkbox" name="generate_ai_image">
+                Generate AI image from product description
+            </label>
+
+            <button type="submit">Publish</button>
+            <label class="checkbox">
+                <input type="checkbox" name="is_featured">
+                Sponsored Ad
+            </label>
+        </form>
     </div>
-</nav>
-
-<div class="form-box">
-    <h2>Add Product</h2>
-
-    <form method="POST" enctype="multipart/form-data">
-        <input name="title" placeholder="Product title" required>
-        <input name="price" placeholder="Price" required>
-        <input name="city" placeholder="City" required>
-
-        <select name="category" required>
-            <option value="">Choose category</option>
-            {% for c in categories %}
-            <option>{{ c }}</option>
-            {% endfor %}
-        </select>
-
-        <textarea name="description" placeholder="Description" rows="5"></textarea>
-
-        <label>Product Image</label>
-        <input type="file" name="image">
-
-        <button type="submit">Publish</button>
-        <label class="checkbox">
-            <input type="checkbox" name="is_featured">
-            Sponsored Ad
-        </label>
-    </form>
-</div>
 
 </body>
+
 </html>
