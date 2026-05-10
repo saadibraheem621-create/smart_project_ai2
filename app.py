@@ -620,5 +620,21 @@ with app.app_context():
     db.create_all()
 
 
+@app.route("/my-products")
+def my_products():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    products = Product.query.filter_by(
+        user_id=session["user_id"]
+    ).order_by(Product.id.desc()).all()
+
+    return render_template(
+        "my_products.html",
+        products=products
+    )
+
+
 if __name__ == "__main__":
     app.run(debug=True)
