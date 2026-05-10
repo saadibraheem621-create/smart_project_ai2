@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Admin - Zenvy</title>
@@ -8,27 +9,27 @@
             <h3>{{ total_users }}</h3>
             <p>Users</p>
         </div>
-    
+
         <div class="stat-card">
             <h3>{{ total_products }}</h3>
             <p>Total Products</p>
         </div>
-    
+
         <div class="stat-card pending">
             <h3>{{ pending_products }}</h3>
             <p>Pending</p>
         </div>
-    
+
         <div class="stat-card approved">
             <h3>{{ approved_products }}</h3>
             <p>Approved</p>
         </div>
-    
+
         <div class="stat-card rejected">
             <h3>{{ rejected_products }}</h3>
             <p>Rejected</p>
         </div>
-    
+
         <div class="stat-card featured">
             <h3>{{ featured_requests }}</h3>
             <p>Featured Requests</p>
@@ -36,77 +37,92 @@
     </div>
     <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
 
-<div class="admin-header">
-    <h1>Zenvy Admin</h1>
-    <a class="btn" href="/">Home</a>
-    <a class="btn danger" href="/logout">Logout</a>
-</div>
+    <div class="admin-header">
+        <h1>Zenvy Admin</h1>
+        <a class="btn" href="/">Home</a>
+        <a class="btn danger" href="/logout">Logout</a>
+    </div>
 
-<h2 class="section-title">Users</h2>
+    <h2 class="section-title">Users</h2>
 
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>WhatsApp</th>
-        <th>Products</th>
-    </tr>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>WhatsApp</th>
+            <th>Products</th>
+        </tr>
 
-    {% for u in users %}
-    <tr>
-        <td>{{ u.full_name }}</td>
-        <td>{{ u.username }}</td>
-        <td>{{ u.email }}</td>
-        <td>{{ u.whatsapp }}</td>
-        <td>{{ u.products|length }}</td>
-    </tr>
-    {% endfor %}
-</table>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.full_name }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.whatsapp }}</td>
+            <td>{{ u.products|length }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
-<h2 class="section-title">Products</h2>
+    <h2 class="section-title">Products</h2>
 
-<table>
-    <tr>
-        <th>Image</th>
-        <th>Product</th>
-        <th>Seller</th>
-        <th>Price</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>
+    <table>
+        <tr>
+            <th>Image</th>
+            <th>Product</th>
+            <th>Seller</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
 
-    {% for p in products %}
-    <tr>
-        <td>
-            {% if p.image_name %}
+        {% for p in products %}
+        <tr>
+            <td>
+                {% if p.image_name %}
                 <img class="admin-img" src="/static/uploads/{{ p.image_name }}">
-            {% else %}
+                {% else %}
                 No image
-            {% endif %}
-        </td>
-        <td>{{ p.title }}</td>
-        <td>{{ p.seller.full_name }}</td>
-        <td>{{ p.price }}</td>
-        <td>
-            {% if p.is_active %}
+                {% endif %}
+            </td>
+            <td>{{ p.title }}</td>
+            <td>{{ p.seller.full_name }}</td>
+            <td>{{ p.price }}</td>
+            <td>
+                {% if p.is_active %}
                 Approved
-            {% elif p.is_rejected %}
+                {% elif p.is_rejected %}
                 Rejected
-            {% else %}
+                {% else %}
                 Pending
-            {% endif %}
-        </td>
-        <td>{{ "Visible" if p.is_active else "Hidden" }}</td>
-        <td>
-            <a class="delete" href="/admin/delete-product/{{ p.id }}"
-               onclick="return confirm('Delete product?')">Delete</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+                {% endif %}
+            </td>
+            <td>{{ "Visible" if p.is_active else "Hidden" }}</td>
+            <td class="actions">
+
+                <a class="btn approve" href="/admin/approve/{{ p.id }}">Approve</a>
+
+                <a class="btn reject" href="/admin/reject/{{ p.id }}">Reject</a>
+
+                {% if p.featured_requested %}
+                <a class="btn featured" href="/admin/approve-ad/{{ p.id }}">Approve Ad</a>
+                {% endif %}
+
+                {% if p.is_ad %}
+                <a class="btn remove" href="/admin/remove-ad/{{ p.id }}">Remove Ad</a>
+                {% endif %}
+
+                <a class="delete" href="/admin/delete/{{ p.id }}" onclick="return confirm('Delete product?')">Delete</a>
+
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
 
 </body>
+
 </html>
