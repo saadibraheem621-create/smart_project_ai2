@@ -334,21 +334,25 @@ def add_product():
             if os.path.isfile(app.config["UPLOAD_FOLDER"]):
     os.remove(app.config["UPLOAD_FOLDER"])
 
+
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
             filename = secure_filename(image_file.filename)
             save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             image_file.save(save_path)
 
-        #generate_ai_image = request.form.get("generate_ai_image") == "on"
+       generate_ai_image = request.form.get("generate_ai_image") == "on"
 
-        if generate_ai_image and not filename and description:
-            try:
-                print("AI IMAGE STARTED")
-                output=replicate.run()
-                filename = generate_ai_product_image(title, description)
-            except Exception as e:
-                print("AI IMAGE ERROR:", e)
+if generate_ai_image and not filename and description:
+    try:
+        print("AI IMAGE STARTED")
 
+        filename = generate_ai_product_image(
+            title,
+            description
+        )
+
+    except Exception as e:
+        print("AI IMAGE ERROR:", e)
         is_featured = request.form.get("is_featured") == "on"
 
         product = Product(
