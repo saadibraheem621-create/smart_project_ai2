@@ -331,7 +331,11 @@ def add_product():
         filename = ""
 
         if image_file and image_file.filename and allowed_file(image_file.filename):
-            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+            if os.path.isfile(app.config["UPLOAD_FOLDER"]):
+    os.remove(app.config["UPLOAD_FOLDER"])
+
+
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
             filename = secure_filename(image_file.filename)
             save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             image_file.save(save_path)
@@ -340,6 +344,8 @@ def add_product():
 
         if generate_ai_image and not filename and description:
             try:
+                print("AI IMAGE STARTED")
+                output=replicate.run()
                 filename = generate_ai_product_image(title, description)
             except Exception as e:
                 print("AI IMAGE ERROR:", e)
