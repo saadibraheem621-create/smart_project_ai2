@@ -1,18 +1,18 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
-from datetime import datetime, timedelta
 
 app = Flask(__name__)
+
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "zenvy-secret")
 app.config["UPLOAD_FOLDER"] = "static/uploads"
 
 db_url = os.environ.get("DATABASE_URL", "sqlite:///zenvy.db")
-
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
@@ -66,6 +66,8 @@ class Product(db.Model):
 
     is_active = db.Column(db.Boolean, default=True)
     is_rejected = db.Column(db.Boolean, default=False)
+
+    # Ads
     is_featured = db.Column(db.Boolean, default=False)
     is_ad = db.Column(db.Boolean, default=False)
     ad_expire = db.Column(db.DateTime, nullable=True)
@@ -97,15 +99,30 @@ def inject_user():
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in [
-        "png",
-        "jpg",
-        "jpeg",
-        "gif",
-        "webp",
+        "png", "jpg", "jpeg", "gif", "webp"
     ]
+
+
+def expire_old_ads():
+    expired_ads = Product.query.filter(
+        Product.is_ad == True,
+        Product.ad_expire != None,
+        Product.ad_expire < datetime.utcnow()
+    ).all()
+
+    for product in expired_ads:
+        product.is_ad = False
+        product.is_featured = False
+        product.ad_expire = None
+
+    if expired_ads:
+        db.session.commit()
+
 
 @app.route("/")
 def home():
+    expire_old_ads()
+
     q = request.args.get("q", "")
     selected_category = request.args.get("category", "")
 
@@ -137,8 +154,9 @@ def home():
         featured_products=featured_products,
         categories=CATEGORIES,
         selected_category=selected_category,
-        q=q
+        q=q,
     )
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -153,7 +171,6 @@ def register():
             return redirect(url_for("register"))
 
         old_user = User.query.filter_by(email=email).first()
-
         if old_user:
             flash("Email already exists")
             return redirect(url_for("login"))
@@ -209,7 +226,6 @@ def google_login():
         _external=True,
         _scheme="https"
     )
-
     return google.authorize_redirect(redirect_uri)
 
 
@@ -238,7 +254,6 @@ def google_callback():
             email=email,
             password_hash=generate_password_hash(os.urandom(16).hex()),
         )
-
         db.session.add(user)
         db.session.commit()
 
@@ -265,41 +280,34 @@ def add_product():
 
         if image_file and image_file.filename and allowed_file(image_file.filename):
             os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-
             filename = secure_filename(image_file.filename)
-
-            save_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
-                filename
-            )
-
+            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             image_file.save(save_path)
-    is_featured = request.form.get("is_featured") == "on"
 
-product = Product(
-    title=title,
-    category=category,
-    price=price,
-    description=description,
-    image_name=filename,
-    city=city,
-    user_id=session["user_id"],
-    is_featured=is_featured,
-    is_active=True,
-    is_rejected=False,
-)
+        is_featured = request.form.get("is_featured") == "on"
 
-    db.session.add(product)
+        product = Product(
+            title=title,
+            category=category,
+            price=price,
+            description=description,
+            image_name=filename,
+            city=city,
+            user_id=session["user_id"],
+            is_featured=is_featured,
+            is_ad=is_featured,
+            ad_expire=datetime.utcnow() + timedelta(days=7) if is_featured else None,
+            is_active=True,
+            is_rejected=False,
+        )
+
+        db.session.add(product)
         db.session.commit()
 
         flash("Product added successfully")
-
         return redirect(url_for("my_products"))
 
-    return render_template(
-        "add_product.html",
-        categories=CATEGORIES
-    )
+    return render_template("add_product.html", categories=CATEGORIES)
 
 
 @app.route("/my-products")
@@ -311,10 +319,45 @@ def my_products():
         user_id=session["user_id"]
     ).order_by(Product.id.desc()).all()
 
-    return render_template(
-        "my_products.html",
-        products=products
-    )
+    return render_template("my_products.html", products=products)
+
+
+@app.route("/request-ad/<int:product_id>")
+def request_ad(product_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    product = Product.query.get_or_404(product_id)
+
+    if product.user_id != session["user_id"]:
+        return redirect(url_for("my_products"))
+
+    product.featured_requested = True
+    db.session.commit()
+
+    flash("Ad request sent to admin")
+    return redirect(url_for("my_products"))
+
+
+@app.route("/promote/<int:product_id>")
+def promote_product(product_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    product = Product.query.get_or_404(product_id)
+
+    if product.user_id != session["user_id"]:
+        return redirect(url_for("my_products"))
+
+    product.is_featured = True
+    product.is_ad = True
+    product.ad_expire = datetime.utcnow() + timedelta(days=7)
+    product.featured_requested = False
+
+    db.session.commit()
+
+    flash("Your product is sponsored for 7 days")
+    return redirect(url_for("my_products"))
 
 
 @app.route("/my-products/delete/<int:product_id>")
@@ -334,11 +377,7 @@ def delete_product(product_id):
 @app.route("/product/<int:product_id>")
 def product_details(product_id):
     product = Product.query.get_or_404(product_id)
-
-    return render_template(
-        "product.html",
-        product=product
-    )
+    return render_template("product.html", product=product)
 
 
 @app.route("/edit-product/<int:product_id>", methods=["GET", "POST"])
@@ -362,44 +401,17 @@ def edit_product(product_id):
 
         if image_file and image_file.filename and allowed_file(image_file.filename):
             os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-
             filename = secure_filename(image_file.filename)
-
-            save_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
-                filename
-            )
-
+            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             image_file.save(save_path)
-
             product.image_name = filename
 
         db.session.commit()
 
         flash("Product updated successfully")
-
         return redirect(url_for("my_products"))
 
-    return render_template(
-        "edit_product.html",
-        product=product,
-        categories=CATEGORIES
-    )
-@app.route("/request-ad/<int:product_id>")
-def request_ad(product_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    product = Product.query.get_or_404(product_id)
-
-    if product.user_id != session["user_id"]:
-        return redirect(url_for("my_products"))
-
-    product.featured_requested = True
-    db.session.commit()
-
-    flash("Ad request sent to admin")
-    return redirect(url_for("my_products"))
+    return render_template("edit_product.html", product=product, categories=CATEGORIES)
 
 
 @app.route("/admin", methods=["GET", "POST"])
@@ -424,11 +436,43 @@ def admin_dashboard():
     products = Product.query.order_by(Product.id.desc()).all()
     payments = Payment.query.order_by(Payment.id.desc()).all()
 
-    return render_template(
-        "admin.html",
-        products=products,
-        payments=payments
-    )
+    return render_template("admin.html", products=products, payments=payments)
+
+
+@app.route("/admin/approve-ad/<int:product_id>")
+def approve_ad(product_id):
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+
+    product = Product.query.get_or_404(product_id)
+
+    product.is_featured = True
+    product.is_ad = True
+    product.ad_expire = datetime.utcnow() + timedelta(days=7)
+    product.featured_requested = False
+
+    db.session.commit()
+
+    flash("Sponsored ad approved")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/remove-ad/<int:product_id>")
+def remove_ad(product_id):
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+
+    product = Product.query.get_or_404(product_id)
+
+    product.is_featured = False
+    product.is_ad = False
+    product.ad_expire = None
+    product.featured_requested = False
+
+    db.session.commit()
+
+    flash("Sponsored ad removed")
+    return redirect(url_for("admin_dashboard"))
 
 
 @app.route("/admin/approve/<int:product_id>")
@@ -437,12 +481,10 @@ def approve_product(product_id):
         return redirect(url_for("admin_login"))
 
     product = Product.query.get_or_404(product_id)
-
     product.is_active = True
     product.is_rejected = False
 
     db.session.commit()
-
     return redirect(url_for("admin_dashboard"))
 
 
@@ -452,12 +494,10 @@ def reject_product(product_id):
         return redirect(url_for("admin_login"))
 
     product = Product.query.get_or_404(product_id)
-
     product.is_active = False
     product.is_rejected = True
 
     db.session.commit()
-
     return redirect(url_for("admin_dashboard"))
 
 
@@ -488,47 +528,20 @@ def payment():
         db.session.commit()
 
         flash("Payment request sent")
-
         return redirect(url_for("home"))
 
     return render_template("payment.html")
 
 
-@app.route("/promote/<int:product_id>")
-def promote_product(product_id):
-
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    product = Product.query.get_or_404(product_id)
-
-    if product.user_id != session["user_id"]:
-        return redirect(url_for("my_products"))
-
-    # تفعيل الإعلان لمدة 7 أيام
-    product.is_ad = True
-    product.ad_expire = datetime.utcnow() + timedelta(days=7)
-
-    db.session.commit()
-
-    flash("Your ad is now featured for 7 days")
-
-    return redirect(url_for("my_products"))
-
-
 @app.route("/init-db")
 def init_db():
     db.create_all()
-
     return "Database initialized successfully"
-
-
-with app.app_context():
-    db.create_all()
 
 
 @app.route("/fix-db")
 def fix_db():
+    db.create_all()
 
     db.session.execute(db.text("""
         ALTER TABLE product
@@ -553,6 +566,10 @@ def fix_db():
     db.session.commit()
 
     return "Database fixed successfully"
+
+
+with app.app_context():
+    db.create_all()
 
 
 if __name__ == "__main__":
