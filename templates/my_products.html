@@ -3,177 +3,221 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Products - Zenvy</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <style>
         body {
-            font-family: Arial;
-            background: #f5f7fb;
             margin: 0;
-            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #0f172a;
         }
 
         .topbar {
-            background: #0f172a;
-            padding: 15px 30px;
+            background: white;
+            padding: 16px 8%;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, .06);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
         }
 
         .topbar a {
-            color: white;
             text-decoration: none;
-            margin-left: 15px;
+            color: #0f172a;
+            margin-left: 16px;
             font-weight: bold;
         }
 
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: auto;
-            padding: 30px 0;
+        .logout {
+            background: #ef4444;
+            color: white !important;
+            padding: 9px 14px;
+            border-radius: 10px;
         }
 
-        .title {
-            font-size: 32px;
+        .container {
+            width: 88%;
+            margin: 40px auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
-            color: #111827;
+        }
+
+        .page-title {
+            font-size: 42px;
+            margin: 0;
+        }
+
+        .add-btn {
+            background: #22c55e;
+            color: white;
+            padding: 13px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: bold;
         }
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
         }
 
         .product-card {
             background: white;
-            border-radius: 20px;
+            border-radius: 22px;
             overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
-            transition: .3s;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
         }
 
         .product-image {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            background: #eee;
+            height: 210px;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
         }
 
-        .product-content {
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-body {
             padding: 20px;
         }
 
         .product-title {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #111827;
+            font-size: 22px;
+            margin: 0 0 8px;
         }
 
-        .product-price {
+        .price {
             color: #16a34a;
             font-size: 22px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
-        .product-description {
-            color: #555;
-            margin-bottom: 15px;
+        .desc {
+            color: #64748b;
+            font-size: 14px;
             line-height: 1.6;
+            min-height: 45px;
+        }
+
+        .badges {
+            margin: 15px 0;
         }
 
         .badge {
             display: inline-block;
-            padding: 6px 14px;
-            border-radius: 30px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: white;
             font-size: 12px;
             font-weight: bold;
-            margin-bottom: 15px;
-            color: white;
+            margin-right: 6px;
         }
 
-        .badge.pending {
-            background: #f59e0b;
-        }
-
-        .badge.approved {
+        .approved {
             background: #16a34a;
         }
 
-        .badge.rejected {
+        .pending {
+            background: #f59e0b;
+        }
+
+        .rejected {
             background: #dc2626;
         }
 
-        .badge.featured {
+        .sponsored {
             background: #2563eb;
         }
 
         .actions {
             display: flex;
+            gap: 8px;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .btn {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 10px;
             text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 10px;
             color: white;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 13px;
         }
 
-        .btn-edit {
+        .edit {
             background: #2563eb;
         }
 
-        .btn-delete {
-            background: #dc2626;
+        .delete {
+            background: #ef4444;
         }
 
-        .btn-promote {
-            background: #16a34a;
+        .promote {
+            background: #22c55e;
         }
 
         .empty {
             background: white;
-            padding: 40px;
-            border-radius: 20px;
+            padding: 60px;
+            border-radius: 25px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
+        }
+
+        @media(max-width:700px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .page-title {
+                font-size: 32px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <div class="topbar">
-        <div>
-            <a href="/">Zenvy</a>
-        </div>
+    <nav class="topbar">
+        <div class="logo">Zenvy</div>
 
         <div>
             <a href="/">Home</a>
             <a href="/add">Add Product</a>
-            <a href="/logout">Logout</a>
+            <a class="logout" href="/logout">Logout</a>
         </div>
-    </div>
+    </nav>
 
     <div class="container">
 
-        <h1 class="title">My Products</h1>
+        <div class="page-header">
+            <h1 class="page-title">My Products</h1>
+            <a class="add-btn" href="/add">+ Add New Product</a>
+        </div>
 
         {% if products %}
 
@@ -183,53 +227,55 @@
 
             <div class="product-card">
 
-                {% if p.image_name %}
-                <img class="product-image" src="{{ url_for('static', filename='uploads/' + p.image_name) }}">
-                {% else %}
-                <div class="product-image"></div>
-                {% endif %}
+                <div class="product-image">
+                    {% if p.image_name %}
+                    <img src="{{ url_for('static', filename='uploads/' + p.image_name) }}">
+                    {% else %}
+                    No Image
+                    {% endif %}
+                </div>
 
-                <div class="product-content">
+                <div class="product-body">
 
-                    <h2 class="product-title">
-                        {{ p.title }}
-                    </h2>
+                    <h2 class="product-title">{{ p.title }}</h2>
 
-                    <div class="product-price">
+                    <div class="price">
                         {{ p.price }}
                     </div>
 
-                    <div class="product-description">
-                        {{ p.description }}
+                    <p class="desc">
+                        {{ p.description or "No description added." }}
+                    </p>
+
+                    <div class="badges">
+
+                        {% if p.is_rejected %}
+                        <span class="badge rejected">Rejected</span>
+                        {% elif p.is_active %}
+                        <span class="badge approved">Approved</span>
+                        {% else %}
+                        <span class="badge pending">Pending</span>
+                        {% endif %}
+
+                        {% if p.is_ad %}
+                        <span class="badge sponsored">🔥 Sponsored Ad</span>
+                        {% endif %}
+
                     </div>
-
-                    {% if p.is_active %}
-                    <span class="badge approved">Approved</span>
-                    {% elif p.is_rejected %}
-                    <span class="badge rejected">Rejected</span>
-                    {% else %}
-                    <span class="badge pending">Pending</span>
-                    {% endif %}
-
-                    {% if p.is_ad %}
-                    <span class="badge featured">
-                        Sponsored Ad
-                    </span>
-                    {% endif %}
 
                     <div class="actions">
 
-                        <a class="btn btn-edit" href="/edit-product/{{ p.id }}">
+                        <a class="btn edit" href="/edit-product/{{ p.id }}">
                             Edit
                         </a>
 
-                        <a class="btn btn-delete" href="/my-products/delete/{{ p.id }}"
+                        <a class="btn delete" href="/my-products/delete/{{ p.id }}"
                             onclick="return confirm('Delete this product?')">
                             Delete
                         </a>
 
                         {% if not p.is_ad %}
-                        <a class="btn btn-promote" href="/promote/{{ p.id }}">
+                        <a class="btn promote" href="/promote/{{ p.id }}">
                             Promote Ad
                         </a>
                         {% endif %}
@@ -248,7 +294,8 @@
 
         <div class="empty">
             <h2>No products yet</h2>
-            <p>Add your first product now.</p>
+            <p>Add your first product and start selling.</p>
+            <a class="add-btn" href="/add">Add Product</a>
         </div>
 
         {% endif %}
