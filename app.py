@@ -330,7 +330,7 @@ def add_product():
         image_file = request.files.get("image")
         filename = ""
 
-        if image_file and image_file.filename and allowed_file(image_file.filename):
+    if image_file and image_file.filename and allowed_file(image_file.filename):
             if os.path.isfile(app.config["UPLOAD_FOLDER"]):
     os.remove(app.config["UPLOAD_FOLDER"])
 
