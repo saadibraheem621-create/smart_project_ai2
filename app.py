@@ -127,6 +127,13 @@ def home():
         selected_category=selected_category,
         q=q,
     )
+        featured_products = Product.query.filter_by(
+    is_featured=True
+).all()
+
+products = query.order_by(
+    Product.id.desc()
+).all()
 
 
 @app.route("/register", methods=["GET", "POST"])

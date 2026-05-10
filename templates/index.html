@@ -51,6 +51,52 @@
 
     <button type="submit">Search</button>
 </form>
+{% if featured_products %}
+
+<h2 class="section-title">
+    ⭐ Sponsored Ads
+</h2>
+
+<section class="products">
+
+    {% for product in featured_products %}
+
+    <div class="card sponsored-card">
+
+        <div class="image-box">
+
+            {% if product.image_name %}
+                <img src="/static/uploads/{{ product.image_name }}">
+            {% endif %}
+
+        </div>
+
+        <div class="card-body">
+
+            <span class="featured-badge">
+                ⭐ Sponsored
+            </span>
+
+            <h3>{{ product.title }}</h3>
+
+            <p class="price">
+                {{ product.price }}
+            </p>
+
+            <a class="details"
+               href="/product/{{ product.id }}">
+                View Details
+            </a>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</section>
+
+{% endif %}
 
 <h2 class="section-title">Latest Products</h2>
 
