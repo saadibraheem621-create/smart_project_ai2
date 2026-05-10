@@ -478,3 +478,111 @@ th {
         font-weight:bold;
         margin-bottom:10px;
     }
+    .product-page{
+        max-width:1100px;
+        margin:40px auto;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:35px;
+        padding:20px;
+    }
+    
+    .product-gallery{
+        background:white;
+        border-radius:24px;
+        padding:20px;
+        box-shadow:0 12px 35px rgba(0,0,0,.08);
+    }
+    
+    .main-product-img{
+        width:100%;
+        height:460px;
+        object-fit:cover;
+        border-radius:20px;
+    }
+    
+    .no-image.big{
+        height:460px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#f3f4f6;
+        border-radius:20px;
+        color:#777;
+        font-size:24px;
+    }
+    
+    .product-info{
+        background:white;
+        border-radius:24px;
+        padding:30px;
+        box-shadow:0 12px 35px rgba(0,0,0,.08);
+    }
+    
+    .product-info h1{
+        font-size:34px;
+        margin:15px 0;
+        color:#111827;
+    }
+    
+    .product-price{
+        font-size:30px;
+        font-weight:bold;
+        color:#16a34a;
+        margin-bottom:25px;
+    }
+    
+    .info-row{
+        display:flex;
+        justify-content:space-between;
+        padding:14px 0;
+        border-bottom:1px solid #eee;
+        color:#555;
+    }
+    
+    .product-description{
+        margin-top:25px;
+        background:#f9fafb;
+        padding:20px;
+        border-radius:16px;
+    }
+    
+    .product-description h3{
+        margin-bottom:10px;
+    }
+    
+    .product-description p{
+        color:#555;
+        line-height:1.7;
+    }
+    
+    .contact-btn{
+        display:block;
+        text-align:center;
+        background:#22c55e;
+        color:white;
+        padding:15px;
+        border-radius:14px;
+        text-decoration:none;
+        font-weight:bold;
+        margin-top:20px;
+    }
+    
+    .back-btn{
+        display:block;
+        text-align:center;
+        margin-top:15px;
+        color:#2563eb;
+        text-decoration:none;
+        font-weight:bold;
+    }
+    
+    @media(max-width:800px){
+        .product-page{
+            grid-template-columns:1fr;
+        }
+    
+        .main-product-img{
+            height:320px;
+        }
+    }

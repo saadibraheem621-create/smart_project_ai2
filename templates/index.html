@@ -61,6 +61,9 @@
             {% if product.is_ad %}
                 <div class="featured-badge">⭐ Sponsored</div>
             {% endif %}
+            {% if product.is_featured %}
+            <div class="featured-badge">⭐ Sponsored</div>
+        {% endif %}
 
             <div class="image-box">
                 {% if product.image_name %}

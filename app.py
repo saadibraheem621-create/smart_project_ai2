@@ -372,6 +372,21 @@ def edit_product(product_id):
         product=product,
         categories=CATEGORIES
     )
+@app.route("/request-ad/<int:product_id>")
+def request_ad(product_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    product = Product.query.get_or_404(product_id)
+
+    if product.user_id != session["user_id"]:
+        return redirect(url_for("my_products"))
+
+    product.featured_requested = True
+    db.session.commit()
+
+    flash("Ad request sent to admin")
+    return redirect(url_for("my_products"))
 
 
 @app.route("/admin", methods=["GET", "POST"])

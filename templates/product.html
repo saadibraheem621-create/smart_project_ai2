@@ -2,116 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Products - Zenvy</title>
+    <title>{{ product.title }} - Zenvy</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
 <nav class="nav">
     <div class="logo">Zenvy</div>
-
     <div class="nav-links">
         <a href="/">Home</a>
-        <a href="/add">Add Product</a>
-
-        {% if is_pro %}
-            <span class="pro-badge">PRO SELLER</span>
-        {% else %}
-            <a class="upgrade-btn" href="/upgrade-pro">Upgrade Pro</a>
-        {% endif %}
-
-        <a class="logout" href="/logout">Logout</a>
+        <a href="/my-products">My Products</a>
+        <a href="/add">Sell</a>
     </div>
 </nav>
 
-<div class="container">
+<div class="product-page">
 
-    <h1>My Products</h1>
+    <div class="product-gallery">
+        {% if product.image_name %}
+            <img class="main-product-img" src="/static/uploads/{{ product.image_name }}">
+        {% else %}
+            <div class="no-image big">No Image</div>
+        {% endif %}
+    </div>
 
-    {% with messages = get_flashed_messages() %}
-      {% for msg in messages %}
-        <p class="flash">{{ msg }}</p>
-      {% endfor %}
-    {% endwith %}
+    <div class="product-info">
 
-    {% if products %}
+        {% if product.is_featured %}
+            <span class="featured-badge">⭐ Sponsored</span>
+        {% endif %}
 
-        <div class="products-grid">
+        <h1>{{ product.title }}</h1>
 
-        {% for product in products %}
+        <p class="product-price">{{ product.price }}</p>
 
-            <div class="product-card">
-
-                {% if product.image_name %}
-                    <img src="/static/uploads/{{ product.image_name }}">
-                {% endif %}
-
-                <div class="product-content">
-
-                    <h2>{{ product.title }}</h2>
-
-                    <p class="price">{{ product.price }}</p>
-
-                    <p>{{ product.city }}</p>
-
-                    <p class="category">{{ product.category }}</p>
-
-                    {% if product.is_featured %}
-                        <span class="featured-badge">⭐ Featured</span>
-                    {% endif %}
-
-                    {% if not product.is_active %}
-                        <span class="hidden-badge">Hidden</span>
-                    {% endif %}
-
-                    {% if product.featured_requested %}
-                        <span class="pending-badge">Payment Pending</span>
-                    {% endif %}
-
-                    <div class="actions">
-
-                        <a class="view-btn" href="/product/{{ product.id }}">
-                            View
-                        </a>
-
-                        {% if product.is_active %}
-                            <a class="hide-btn" href="/my-products/hide/{{ product.id }}">
-                                Hide
-                            </a>
-                        {% else %}
-                            <a class="show-btn" href="/my-products/show/{{ product.id }}">
-                                Show
-                            </a>
-                        {% endif %}
-
-                        <a class="delete-btn" href="/my-products/delete/{{ product.id }}">
-                            Delete
-                        </a>
-
-                    </div>
-
-                    {% if not product.is_featured and not product.featured_requested %}
-                        <a class="featured-btn" href="/payment/featured/{{ product.id }}">
-                            ⭐ Make Featured
-                        </a>
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-        {% endfor %}
-
+        <div class="info-row">
+            <span>📍 City</span>
+            <b>{{ product.city or "Not specified" }}</b>
         </div>
 
-    {% else %}
-
-        <div class="empty-box">
-            <h2>No Products Yet</h2>
-            <a class="add-first-btn" href="/add">Add First Product</a>
+        <div class="info-row">
+            <span>📦 Category</span>
+            <b>{{ product.category }}</b>
         </div>
 
-    {% endif %}
+        <div class="info-row">
+            <span>👤 Seller</span>
+            <b>{{ product.seller.full_name if product.seller else "Unknown seller" }}</b>
+        </div>
+
+        <div class="product-description">
+            <h3>Description</h3>
+            <p>{{ product.description or "No description added." }}</p>
+        </div>
+
+        {% if product.seller and product.seller.email %}
+            <a class="contact-btn"
+               href="mailto:{{ product.seller.email }}">
+                Contact Seller
+            </a>
+        {% endif %}
+
+        <a class="back-btn" href="/">
+            ← Back to marketplace
+        </a>
+
+    </div>
 
 </div>
 
