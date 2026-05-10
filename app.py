@@ -314,7 +314,6 @@ def google_callback():
 
     return redirect(url_for("home"))
 
-
 @app.route("/add", methods=["GET", "POST"])
 def add_product():
     if "user_id" not in session:
@@ -330,34 +329,21 @@ def add_product():
         image_file = request.files.get("image")
         filename = ""
 
+        if image_file and image_file.filename and allowed_file(image_file.filename):
+            if os.path.isfile(app.config["UPLOAD_FOLDER"]):
+                os.remove(app.config["UPLOAD_FOLDER"])
 
-if image_file and image_file.filename and allowed_file(image_file.filename):
+            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-    if os.path.isfile(app.config["UPLOAD_FOLDER"]):
-        os.remove(app.config["UPLOAD_FOLDER"])
+            filename = secure_filename(image_file.filename)
+            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            image_file.save(save_path)
 
-    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+        generate_ai_image = request.form.get("generate_ai_image") == "on"
 
-    filename = secure_filename(image_file.filename)
+        if False and generate_ai_image and not filename and description:
+            pass
 
-    save_path = os.path.join(
-        app.config["UPLOAD_FOLDER"],
-        filename
-    )
-    image_file.save(save_path)
-    generate_ai_image = request.form.get("generate_ai_image") == "on"
-
-if generate_ai_image and not filename and description:
-    try:
-        print("AI IMAGE STARTED")
-
-        filename = generate_ai_product_image(
-            title,
-            description
-        )
-
-    except Exception as e:
-        print("AI IMAGE ERROR:", e)
         is_featured = request.form.get("is_featured") == "on"
 
         product = Product(
@@ -370,7 +356,6 @@ if generate_ai_image and not filename and description:
             user_id=session["user_id"],
             is_featured=is_featured,
             is_ad=is_featured,
-            ad_expire=datetime.utcnow() + timedelta(days=7) if is_featured else None,
             is_active=True,
             is_rejected=False,
         )
@@ -382,24 +367,6 @@ if generate_ai_image and not filename and description:
         return redirect(url_for("my_products"))
 
     return render_template("add_product.html", categories=CATEGORIES)
-
-
-@app.route("/request-ad/<int:product_id>")
-def request_ad(product_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    product = Product.query.get_or_404(product_id)
-
-    if product.user_id != session["user_id"]:
-        return redirect(url_for("my_products"))
-
-    product.featured_requested = True
-    db.session.commit()
-
-    flash("Ad request sent to admin")
-    return redirect(url_for("my_products"))
-
 
 @app.route("/promote/<int:product_id>")
 def promote_product(product_id):
