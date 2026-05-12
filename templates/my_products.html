@@ -225,9 +225,6 @@
             <a class="logout" href="/logout">Logout</a>
         </div>
     </nav>
-    <a class="btn ai" href="/generate-image/{{ product.id }}">
-        Generate AI Image
-    </a>
 
     <div class="container">
 
@@ -289,6 +286,10 @@
                         <a class="btn delete" href="/my-products/delete/{{ product.id }}"
                             onclick="return confirm('Delete this product?')">
                             Delete
+
+                        </a>
+                        <a class="btn ai" href="/generate-image/{{ product.id }}">
+                            Generate AI Image
                         </a>
 
                         {% if not product.is_ad %}
