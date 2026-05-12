@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>ترويج صفحتي</title>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      font-family:Tahoma;
+      background:
+      linear-gradient(135deg,#1877f2,#0f172a);
+      color:white;
+      min-height:100vh;
+    }
+
+    header{
+      padding:20px 8%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:rgba(0,0,0,.2);
+      backdrop-filter:blur(10px);
+    }
+
+    .logo{
+      font-size:28px;
+      font-weight:bold;
+    }
+
+    .top-btn{
+      background:white;
+      color:#1877f2;
+      padding:12px 24px;
+      border-radius:40px;
+      text-decoration:none;
+      font-weight:bold;
+    }
+
+    .hero{
+      padding:70px 8%;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:40px;
+      align-items:center;
+    }
+
+    h1{
+      font-size:50px;
+      margin-bottom:20px;
+      line-height:1.4;
+    }
+
+    h1 span{
+      color:#93c5fd;
+    }
+
+    p{
+      font-size:22px;
+      line-height:1.9;
+      color:#dbeafe;
+      margin-bottom:30px;
+    }
+
+    .buttons{
+      display:flex;
+      gap:15px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      padding:16px 28px;
+      border-radius:50px;
+      text-decoration:none;
+      font-size:19px;
+      font-weight:bold;
+      transition:.3s;
+    }
+
+    .primary{
+      background:white;
+      color:#1877f2;
+    }
+
+    .secondary{
+      border:2px solid white;
+      color:white;
+    }
+
+    .btn:hover{
+      transform:translateY(-5px);
+    }
+
+    .card{
+      background:rgba(255,255,255,.08);
+      border-radius:30px;
+      padding:25px;
+      border:1px solid rgba(255,255,255,.15);
+    }
+
+    .mock{
+      background:#111827;
+      border-radius:20px;
+      padding:25px;
+    }
+
+    .post{
+      background:white;
+      color:#111827;
+      border-radius:18px;
+      padding:18px;
+      margin-top:15px;
+    }
+
+    .post h3{
+      color:#1877f2;
+      margin-bottom:10px;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:15px;
+      margin-top:20px;
+    }
+
+    .stat{
+      background:rgba(255,255,255,.1);
+      padding:18px;
+      border-radius:18px;
+      text-align:center;
+    }
+
+    .stat h2{
+      color:#93c5fd;
+      margin-bottom:8px;
+    }
+
+    .features{
+      padding:30px 8%;
+    }
+
+    .features h2{
+      text-align:center;
+      margin-bottom:30px;
+      font-size:35px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:20px;
+    }
+
+    .box{
+      background:rgba(255,255,255,.08);
+      border-radius:22px;
+      padding:25px;
+      text-align:center;
+    }
+
+    .icon{
+      font-size:45px;
+      margin-bottom:15px;
+    }
+
+    .box h3{
+      margin-bottom:12px;
+      color:#93c5fd;
+    }
+
+    footer{
+      text-align:center;
+      padding:30px;
+      color:#d1d5db;
+    }
+
+    @media(max-width:850px){
+
+      .hero{
+        grid-template-columns:1fr;
+      }
+
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      .stats{
+        grid-template-columns:1fr;
+      }
+
+      h1{
+        font-size:36px;
+      }
+
+      p{
+        font-size:18px;
+      }
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="logo">
+    صفحتي التقنية
+  </div>
+
+  <a class="top-btn"
+  href="https://facebook.com/YOUR_PAGE"
+  target="_blank">
+
+  متابعة الصفحة
+
+  </a>
+
+</header>
+
+<section class="hero">
+
+  <div>
+
+    <h1>
+      تابع صفحتنا على
+      <span>فيسبوك</span>
+    </h1>
+
+    <p>
+      محتوى برمجة، ذكاء اصطناعي،
+      شروحات تقنية، مشاريع،
+      ونصائح تساعدك تتطور بالمجال التقني.
+    </p>
+
+    <div class="buttons">
+
+      <a class="btn primary"
+      href="https://facebook.com/YOUR_PAGE"
+      target="_blank">
+
+      👍 متابعة الصفحة
+
+      </a>
+
+      <a class="btn secondary"
+      href="https://facebook.com/https://www.facebook.com/61572000242574//videos"
+      target="_blank">
+
+      🎥 مشاهدة الفيديوهات
+
+      </a>
+
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <div class="mock">
+
+      <h2>📢 آخر المنشورات</h2>
+
+      <div class="post">
+        <h3>شرح Python</h3>
+        <p>
+          تعلم أساسيات البرمجة خطوة بخطوة.
+        </p>
+      </div>
+
+      <div class="post">
+        <h3>مشروع AI</h3>
+        <p>
+          بناء مشروع ذكاء اصطناعي عملي.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="stats">
+
+      <div class="stat">
+        <h2>10K+</h2>
+        <span>متابع</span>
+      </div>
+
+      <div class="stat">
+        <h2>AI</h2>
+        <span>ذكاء</span>
+      </div>
+
+      <div class="stat">
+        <h2>Daily</h2>
+        <span>منشورات</span>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<section class="features">
+
+  <h2>
+    ماذا نقدم؟
+  </h2>
+
+  <div class="grid">
+
+    <div class="box">
+      <div class="icon">💻</div>
+      <h3>برمجة</h3>
+      <p>
+        شروحات تطوير وبرمجة حديثة.
+      </p>
+    </div>
+
+    <div class="box">
+      <div class="icon">🤖</div>
+      <h3>ذكاء اصطناعي</h3>
+      <p>
+        Machine Learning و Deep Learning.
+      </p>
+    </div>
+
+    <div class="box">
+      <div class="icon">🚀</div>
+      <h3>تطوير مهارات</h3>
+      <p>
+        محتوى يساعدك تبدأ وتربح من التقنية.
+      </p>
+    </div>
+
+  </div>
+
+</section>
+
+<footer>
+
+© 2026 جميع الحقوق محفوظة
+
+</footer>
+
+</body>
+</html>
