@@ -257,16 +257,16 @@
                     <h2 class="product-title">{{ p.title }}</h2>
 
                     <div class="price">
-                        {{ p.price }}
+                        {{ product.price }}
                     </div>
 
                     <p class="desc">
-                        {{ p.description or "No description added." }}
+                        {{ product.description or "No description added." }}
                     </p>
 
                     <div class="badges">
 
-                        {% if p.is_rejected %}
+                        {% if product.is_rejected %}
                         <span class="badge rejected">Rejected</span>
                         {% elif p.is_active %}
                         <span class="badge approved">Approved</span>
@@ -274,7 +274,7 @@
                         <span class="badge pending">Pending</span>
                         {% endif %}
 
-                        {% if p.is_ad %}
+                        {% if product.is_ad %}
                         <span class="badge sponsored">🔥 Sponsored Ad</span>
                         {% endif %}
 
@@ -291,7 +291,7 @@
                             Delete
                         </a>
 
-                        {% if not p.is_ad %}
+                        {% if not product.is_ad %}
                         <a class="btn promote" href="/promote/{{ p.id }}">
                             Promote Ad
                         </a>
