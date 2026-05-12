@@ -467,6 +467,33 @@ def admin_dashboard():
 
     return render_template("admin.html", products=products, payments=payments)
 
+@app.route("/generate-image/<int:product_id>")
+def generate_product_image(product_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    product = Product.query.get_or_404(product_id)
+
+    if product.user_id != session["user_id"]:
+        return redirect(url_for("my_products"))
+
+    try:
+        filename = generate_ai_product_image(
+            product.title,
+            product.description or product.title
+        )
+
+        product.image_name = filename
+        db.session.commit()
+
+        flash("AI image generated successfully")
+
+    except Exception as e:
+        print("AI IMAGE ERROR:", e)
+        flash("AI image failed")
+
+    return redirect(url_for("my_products"))
+
 
 @app.route("/admin/approve-ad/<int:product_id>")
 def approve_ad(product_id):
