@@ -240,12 +240,12 @@
 
         <div class="products-grid">
 
-            {% for p in products %}
+            {% for product in products %}
 
             <div class="product-card">
 
                 <div class="product-image">
-                    {% if p.image_name %}
+                    {% if product.image_name %}
                     <img src="{{ url_for('static', filename='uploads/' + p.image_name) }}">
                     {% else %}
                     No Image
@@ -268,7 +268,7 @@
 
                         {% if product.is_rejected %}
                         <span class="badge rejected">Rejected</span>
-                        {% elif p.is_active %}
+                        {% elif product.is_active %}
                         <span class="badge approved">Approved</span>
                         {% else %}
                         <span class="badge pending">Pending</span>
