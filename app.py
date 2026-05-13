@@ -205,7 +205,10 @@ def data_analysis():
         path = os.path.join("static/data_files", filename)
         file.save(path)
 
-        df = pd.read_csv(path)
+        try:
+    df = pd.read_csv(path, encoding="utf-8")
+except:
+    df = pd.read_csv(path, encoding="latin1")
 
         result = {
             "rows": df.shape[0],
