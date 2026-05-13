@@ -204,38 +204,41 @@ def data_analysis():
 
         os.makedirs("static/data_files", exist_ok=True)
 
-        filename = secure_filename(file.filename)
-        path = os.path.join("static/data_files", filename)
-        file.save(path)
+
+filename = secure_filename(file.filename)
+path = os.path.join("static/data_files", filename)
+file.save(path)
+
+try:
+    df = pd.read_csv(path, encoding="utf-8")
+except Exception:
     try:
-        df = pd.read_csv(path, encoding="utf-8")
+        df = pd.read_csv(path, encoding="latin1")
     except Exception as e:
-        try:
-            df = pd.read_csv(path, encoding="latin1")
-        except Exception as e:
-            return f"CSV Error: {str(e)}"
+        flash(f"CSV Error: {str(e)}")
+        return redirect(url_for("data_analysis"))
 
-    result = {
-        "rows": df.shape[0],
-        "columns": df.shape[1],
-        "column_names": list(df.columns),
-        "missing_values": df.isnull().sum().to_dict(),
-        "numeric_summary": df.describe().to_html(classes="table"),
-        "sample": df.head(10).to_html(classes="table"),
-    }
+result = {
+    "rows": df.shape[0],
+    "columns": df.shape[1],
+    "column_names": list(df.columns),
+    "missing_values": df.isnull().sum().to_dict(),
+    "numeric_summary": df.describe().to_html(classes="table"),
+    "sample": df.head(10).to_html(classes="table"),
+}
 
-    record = DataAnalysisFile(
-        filename=filename,
-        rows_count=df.shape[0],
-        columns_count=df.shape[1],
-        columns_names=", ".join(df.columns),
-        user_id=session["user_id"],
-    )
+record = DataAnalysisFile(
+    filename=filename,
+    rows_count=df.shape[0],
+    columns_count=df.shape[1],
+    columns_names=", ".join(df.columns),
+    user_id=session["user_id"],
+)
 
-    db.session.add(record)
-    db.session.commit()
+db.session.add(record)
+db.session.commit()
 
-    return render_template("data_analysis.html", result=result)
+return render_template("data_analysis.html", result=result)
 
 
 @app.route("/")
