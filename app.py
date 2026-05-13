@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 import os
 from datetime import datetime, timedelta
 
@@ -9,6 +11,8 @@ from authlib.integrations.flask_client import OAuth
 import replicate
 import requests
 import uuid
+import pandas as pd
+import numpy as np
 
 app = Flask(__name__)
 
@@ -55,6 +59,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     products = db.relationship("Product", backref="seller", lazy=True)
+
 
 class DataAnalysisFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -178,8 +183,6 @@ def expire_old_ads():
     if expired_ads:
         db.session.commit()
 
-import pandas as pd
-import numpy as np
 
 @app.route("/data-analysis", methods=["GET", "POST"])
 def data_analysis():
@@ -204,31 +207,30 @@ def data_analysis():
         filename = secure_filename(file.filename)
         path = os.path.join("static/data_files", filename)
         file.save(path)
-
-        try:
+     try:
     df = pd.read_csv(path, encoding="utf-8")
 except:
     df = pd.read_csv(path, encoding="latin1")
 
-        result = {
-            "rows": df.shape[0],
-            "columns": df.shape[1],
-            "column_names": list(df.columns),
-            "missing_values": df.isnull().sum().to_dict(),
-            "numeric_summary": df.describe().to_html(classes="table"),
-            "sample": df.head(10).to_html(classes="table"),
-        }
+    result = {
+        "rows": df.shape[0],
+        "columns": df.shape[1],
+        "column_names": list(df.columns),
+        "missing_values": df.isnull().sum().to_dict(),
+        "numeric_summary": df.describe().to_html(classes="table"),
+        "sample": df.head(10).to_html(classes="table"),
+    }
 
-        record = DataAnalysisFile(
-            filename=filename,
-            rows_count=df.shape[0],
-            columns_count=df.shape[1],
-            columns_names=", ".join(df.columns),
-            user_id=session["user_id"],
-        )
+    record = DataAnalysisFile(
+        filename=filename,
+        rows_count=df.shape[0],
+        columns_count=df.shape[1],
+        columns_names=", ".join(df.columns),
+        user_id=session["user_id"],
+    )
 
-        db.session.add(record)
-        db.session.commit()
+    db.session.add(record)
+    db.session.commit()
 
     return render_template("data_analysis.html", result=result)
 
@@ -377,6 +379,7 @@ def google_callback():
 
     return redirect(url_for("home"))
 
+
 @app.route("/add", methods=["GET", "POST"])
 def add_product():
     if "user_id" not in session:
@@ -430,6 +433,7 @@ def add_product():
         return redirect(url_for("my_products"))
 
     return render_template("add_product.html", categories=CATEGORIES)
+
 
 @app.route("/promote/<int:product_id>")
 def promote_product(product_id):
@@ -529,6 +533,7 @@ def admin_dashboard():
     payments = Payment.query.order_by(Payment.id.desc()).all()
 
     return render_template("admin.html", products=products, payments=payments)
+
 
 @app.route("/generate-image/<int:product_id>")
 def generate_product_image(product_id):
