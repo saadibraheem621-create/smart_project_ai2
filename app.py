@@ -204,153 +204,40 @@ def data_analysis():
 
         os.makedirs("static/data_files", exist_ok=True)
 
+        filename = secure_filename(file.filename)
+        path = os.path.join("static/data_files", filename)
+        file.save(path)
 
-filename = secure_filename(file.filename)
-path = os.path.join("static/data_files", filename)
-file.save(path)
+        try:
+            df = pd.read_csv(path, encoding="utf-8")
+        except Exception:
+            try:
+                df = pd.read_csv(path, encoding="latin1")
+            except Exception as e:
+                flash(f"CSV Error: {str(e)}")
+                return redirect(url_for("data_analysis"))
 
-try:
-    df = pd.read_csv(path, encoding="utf-8")
-except Exception:
-    try:
-        df = pd.read_csv(path, encoding="latin1")
-    except Exception as e:
-        flash(f"CSV Error: {str(e)}")
-        return redirect(url_for("data_analysis"))
+        result = {
+            "rows": df.shape[0],
+            "columns": df.shape[1],
+            "column_names": list(df.columns),
+            "missing_values": df.isnull().sum().to_dict(),
+            "numeric_summary": df.describe().to_html(classes="table"),
+            "sample": df.head(10).to_html(classes="table"),
+        }
 
-result = {
-    "rows": df.shape[0],
-    "columns": df.shape[1],
-    "column_names": list(df.columns),
-    "missing_values": df.isnull().sum().to_dict(),
-    "numeric_summary": df.describe().to_html(classes="table"),
-    "sample": df.head(10).to_html(classes="table"),
-}
-
-record = DataAnalysisFile(
-    filename=filename,
-    rows_count=df.shape[0],
-    columns_count=df.shape[1],
-    columns_names=", ".join(df.columns),
-    user_id=session["user_id"],
-)
-
-db.session.add(record)
-db.session.commit()
-
-return render_template("data_analysis.html", result=result)
-
-
-@app.route("/")
-def home():
-    expire_old_ads()
-
-    q = request.args.get("q", "")
-    selected_category = request.args.get("category", "")
-
-    query = Product.query.filter_by(
-        is_active=True,
-        is_rejected=False
-    )
-
-    if q:
-        query = query.filter(Product.title.ilike(f"%{q}%"))
-
-    if selected_category:
-        query = query.filter_by(category=selected_category)
-
-    featured_products = Product.query.filter_by(
-        is_featured=True,
-        is_active=True,
-        is_rejected=False
-    ).order_by(Product.id.desc()).all()
-
-    products = query.order_by(
-        Product.is_ad.desc(),
-        Product.is_featured.desc(),
-        Product.id.desc()
-    ).all()
-
-    return render_template(
-        "index.html",
-        products=products,
-        featured_products=featured_products,
-        categories=CATEGORIES,
-        selected_category=selected_category,
-        q=q,
-    )
-
-
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        full_name = request.form.get(
-            "full_name") or request.form.get("username")
-        email = request.form.get("email")
-        password = request.form.get("password")
-
-        if not email or not password:
-            flash("Please fill all fields")
-            return redirect(url_for("register"))
-
-        old_user = User.query.filter_by(email=email).first()
-        if old_user:
-            flash("Email already exists")
-            return redirect(url_for("login"))
-
-        user = User(
-            full_name=full_name,
-            username=full_name,
-            email=email,
-            password_hash=generate_password_hash(password),
+        record = DataAnalysisFile(
+            filename=filename,
+            rows_count=df.shape[0],
+            columns_count=df.shape[1],
+            columns_names=", ".join(df.columns),
+            user_id=session["user_id"],
         )
 
-        db.session.add(user)
+        db.session.add(record)
         db.session.commit()
 
-        session["user_id"] = user.id
-        session["user_email"] = user.email
-
-        return redirect(url_for("home"))
-
-    return render_template("register.html")
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-
-        user = User.query.filter_by(email=email).first()
-
-        if not user or not user.password_hash or not check_password_hash(user.password_hash, password):
-            flash("Wrong email or password")
-            return redirect(url_for("login"))
-
-        session["user_id"] = user.id
-        session["user_email"] = user.email
-
-        return redirect(url_for("home"))
-
-    return render_template("login.html")
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("home"))
-
-
-@app.route("/google-login")
-def google_login():
-    redirect_uri = url_for(
-        "google_callback",
-        _external=True,
-        _scheme="https"
-    )
-    return google.authorize_redirect(redirect_uri)
-
+    return render_template("data_analysis.html", result=result)
 
 @app.route("/auth/google/callback")
 def google_callback():
