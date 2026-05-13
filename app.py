@@ -182,7 +182,9 @@ def expire_old_ads():
 
     if expired_ads:
         db.session.commit()
-
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 @app.route("/data-analysis", methods=["GET", "POST"])
 def data_analysis():
