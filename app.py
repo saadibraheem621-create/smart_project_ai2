@@ -188,92 +188,42 @@ def home():
 
 @app.route("/data-analysis", methods=["GET", "POST"])
 def data_analysis():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
 
-    result = None
+    if request.method == "GET":
+        return render_template("data_analysis.html")
 
-    if request.method == "POST":
-        file = request.files.get("csv_file")
+    file = request.files.get("csv_file")
 
-        if not file or file.filename == "":
-            flash("Please upload CSV file")
-            return redirect(url_for("data_analysis"))
+    if not file:
+        return "No file uploaded"
 
-        if not file.filename.endswith(".csv"):
-            flash("Only CSV files allowed")
-            return redirect(url_for("data_analysis"))
+    if file.filename == "":
+        return "Empty filename"
 
-        os.makedirs("static/data_files", exist_ok=True)
+    os.makedirs("static/data_files", exist_ok=True)
 
-        filename = secure_filename(file.filename)
-        path = os.path.join("static/data_files", filename)
-        file.save(path)
+    filename = secure_filename(file.filename)
+    path = os.path.join("static/data_files", filename)
 
-        try:
-            df = pd.read_csv(path, encoding="utf-8")
-        except Exception:
-            try:
-                df = pd.read_csv(path, encoding="latin1")
-            except Exception as e:
-                flash(f"CSV Error: {str(e)}")
-                return redirect(url_for("data_analysis"))
+    file.save(path)
 
-        result = {
-            "rows": df.shape[0],
-            "columns": df.shape[1],
-            "column_names": list(df.columns),
-            "missing_values": df.isnull().sum().to_dict(),
-            "numeric_summary": df.describe().to_html(classes="table"),
-            "sample": df.head(10).to_html(classes="table"),
-        }
+    try:
+        df = pd.read_csv(path, encoding="utf-8")
+    except:
+        df = pd.read_csv(path, encoding="latin1")
 
-        record = DataAnalysisFile(
-            filename=filename,
-            rows_count=df.shape[0],
-            columns_count=df.shape[1],
-            columns_names=", ".join(df.columns),
-            user_id=session["user_id"],
-        )
+    result = {
+        "rows": df.shape[0],
+        "columns": df.shape[1],
+        "column_names": list(df.columns),
+        "missing_values": df.isnull().sum().to_dict(),
+        "sample": df.head(10).to_html(classes="table")
+    }
 
-        db.session.add(record)
-        db.session.commit()
-
-    return render_template("data_analysis.html", result=result)
-
-@app.route("/auth/google/callback")
-def google_callback():
-    token = google.authorize_access_token()
-    user_info = token.get("userinfo")
-
-    if not user_info:
-        resp = google.get("https://www.googleapis.com/oauth2/v3/userinfo")
-        user_info = resp.json()
-
-    email = user_info.get("email")
-    name = user_info.get("name") or email
-
-    if not email:
-        flash("Google login failed")
-        return redirect(url_for("login"))
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user:
-        user = User(
-            full_name=name,
-            username=name,
-            email=email,
-            password_hash=generate_password_hash(os.urandom(16).hex()),
-        )
-        db.session.add(user)
-        db.session.commit()
-
-    session["user_id"] = user.id
-    session["user_email"] = user.email
-
-    return redirect(url_for("home"))
-
+    return render_template(
+        "data_analysis.html",
+        result=result
+    )
 
 @app.route("/add", methods=["GET", "POST"])
 def add_product():
