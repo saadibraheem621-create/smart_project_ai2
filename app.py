@@ -14,7 +14,7 @@ import uuid
 
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 150 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024
 
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "zenvy-secret")
 app.config["UPLOAD_FOLDER"] = "static/uploads"
