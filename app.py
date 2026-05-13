@@ -182,9 +182,12 @@ def expire_old_ads():
 
     if expired_ads:
         db.session.commit()
+
+
 @app.route("/")
 def home():
     return render_template("index.html")
+
 
 @app.route("/data-analysis", methods=["GET", "POST"])
 def data_analysis():
@@ -208,9 +211,10 @@ def data_analysis():
     file.save(path)
 
     try:
-        df = pd.read_csv(path, encoding="utf-8")
-    except:
-        df = pd.read_csv(path, encoding="latin1")
+        df = pd.read_csv(path, encoding="utf-8", sep=",", skiprows=1)
+
+    except Exception:
+        df = pd.read_csv(path, encoding="latin1", sep=",", skiprows=1)
 
     result = {
         "rows": df.shape[0],
@@ -224,6 +228,7 @@ def data_analysis():
         "data_analysis.html",
         result=result
     )
+
 
 @app.route("/add", methods=["GET", "POST"])
 def add_product():
