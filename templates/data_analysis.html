@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Data Analysis - Zenvy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f7fb;
+            padding: 40px;
+        }
+
+        .box {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.08);
+            margin-bottom: 30px;
+        }
+
+        input, button {
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">
+        <h1>AI Data Analysis</h1>
+        <p>Upload CSV file and let Zenvy analyze it automatically.</p>
+
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="csv_file" accept=".csv" required>
+            <br>
+            <button type="submit">Analyze Data</button>
+        </form>
+    </div>
+
+    {% if result %}
+
+    <div class="box">
+        <h2>Dataset Overview</h2>
+        <p><b>Rows:</b> {{ result.rows }}</p>
+        <p><b>Columns:</b> {{ result.columns }}</p>
+        <p><b>Column Names:</b> {{ result.column_names }}</p>
+    </div>
+
+    <div class="box">
+        <h2>Missing Values</h2>
+        <pre>{{ result.missing_values }}</pre>
+    </div>
+
+    <div class="box">
+        <h2>Sample Data</h2>
+        {{ result.sample | safe }}
+    </div>
+
+    <div class="box">
+        <h2>Numeric Summary</h2>
+        {{ result.numeric_summary | safe }}
+    </div>
+
+    {% endif %}
+
+</body>
+</html>

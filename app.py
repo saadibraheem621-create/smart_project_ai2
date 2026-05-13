@@ -56,6 +56,15 @@ class User(db.Model):
 
     products = db.relationship("Product", backref="seller", lazy=True)
 
+class DataAnalysisFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(300))
+    rows_count = db.Column(db.Integer)
+    columns_count = db.Column(db.Integer)
+    columns_names = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -168,6 +177,57 @@ def expire_old_ads():
 
     if expired_ads:
         db.session.commit()
+
+import pandas as pd
+import numpy as np
+
+@app.route("/data-analysis", methods=["GET", "POST"])
+def data_analysis():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    result = None
+
+    if request.method == "POST":
+        file = request.files.get("csv_file")
+
+        if not file or file.filename == "":
+            flash("Please upload CSV file")
+            return redirect(url_for("data_analysis"))
+
+        if not file.filename.endswith(".csv"):
+            flash("Only CSV files allowed")
+            return redirect(url_for("data_analysis"))
+
+        os.makedirs("static/data_files", exist_ok=True)
+
+        filename = secure_filename(file.filename)
+        path = os.path.join("static/data_files", filename)
+        file.save(path)
+
+        df = pd.read_csv(path)
+
+        result = {
+            "rows": df.shape[0],
+            "columns": df.shape[1],
+            "column_names": list(df.columns),
+            "missing_values": df.isnull().sum().to_dict(),
+            "numeric_summary": df.describe().to_html(classes="table"),
+            "sample": df.head(10).to_html(classes="table"),
+        }
+
+        record = DataAnalysisFile(
+            filename=filename,
+            rows_count=df.shape[0],
+            columns_count=df.shape[1],
+            columns_names=", ".join(df.columns),
+            user_id=session["user_id"],
+        )
+
+        db.session.add(record)
+        db.session.commit()
+
+    return render_template("data_analysis.html", result=result)
 
 
 @app.route("/")
