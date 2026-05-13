@@ -11,8 +11,7 @@ from authlib.integrations.flask_client import OAuth
 import replicate
 import requests
 import uuid
-import pandas as pd
-import numpy as np
+
 
 app = Flask(__name__)
 
