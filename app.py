@@ -188,12 +188,17 @@ def expire_old_ads():
 def home():
     return render_template("index.html")
 
+@app.route("/plans")
+def plans():
+    return render_template("plans.html")
+
 
 @app.route("/data-analysis", methods=["GET", "POST"])
 def data_analysis():
 
-    if request.method == "GET":
-        return render_template("data_analysis.html")
+    if not session.get("paid"):
+        return redirect(url_for("payment"))
+        
 
     file = request.files.get("csv_file")
 
@@ -228,6 +233,12 @@ def data_analysis():
         "data_analysis.html",
         result=result
     )
+
+@app.route("/mark-paid/<plan>")
+def mark_paid(plan):
+    session["paid"] = True
+    session["plan"] = plan
+    return redirect(url_for("data_analysis"))
 
 
 @app.route("/add", methods=["GET", "POST"])

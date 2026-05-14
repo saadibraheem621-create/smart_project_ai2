@@ -11,3 +11,5 @@ numpy
 scikit-learn
 matplotlib
 openpyxl
+scikit-learn
+matplotlib
