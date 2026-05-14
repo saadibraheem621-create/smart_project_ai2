@@ -627,3 +627,7 @@ th {
 .ai {
     background: #7c3aed;
 }
+.pay-card img{
+    border-radius:12px;
+    margin-top:15px;
+}
