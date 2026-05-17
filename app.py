@@ -14,7 +14,7 @@ import uuid
 
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "zenvy-secret")
 app.config["UPLOAD_FOLDER"] = "static/uploads"
@@ -188,6 +188,7 @@ def expire_old_ads():
 def home():
     return render_template("index.html")
 
+
 @app.route("/plans")
 def plans():
     return render_template("plans.html")
@@ -198,7 +199,6 @@ def data_analysis():
 
     if not session.get("paid"):
         return redirect(url_for("payment"))
-        
 
     file = request.files.get("csv_file")
 
@@ -207,6 +207,11 @@ def data_analysis():
 
     if file.filename == "":
         return "Empty filename"
+    if not file.filename.endswith(".csv"):
+        return "Only CSV allowed"   
+
+    if file.content_length > 500 * 1024 * 1024:
+        return "File too large"
 
     os.makedirs("static/data_files", exist_ok=True)
 
@@ -233,6 +238,7 @@ def data_analysis():
         "data_analysis.html",
         result=result
     )
+
 
 @app.route("/mark-paid/<plan>")
 def mark_paid(plan):
