@@ -555,9 +555,8 @@ def init_db():
     return "Database initialized successfully"
 
 
-@app.route("/fix-db")
-def fix_db():
-    db.create_all()
+
+
 
     db.session.execute(db.text("""
         ALTER TABLE product
