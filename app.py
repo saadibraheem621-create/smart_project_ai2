@@ -176,6 +176,11 @@ def generate_ai_product_image(title, description):
 
     return filename
 
+@app.route("/fix-db")
+def fix_db():
+    db.create_all()
+    return "Database updated"
+
 
 @app.context_processor
 def inject_user():
