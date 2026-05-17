@@ -214,6 +214,35 @@ def home():
 def login():
     return render_template("login.html")
 
+@app.route("/google-login")
+def google_login():
+    redirect_uri = url_for("google_callback", _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+
+@app.route("/auth/google/callback")
+def google_callback():
+    token = google.authorize_access_token()
+    user_info = google.get("https://www.googleapis.com/oauth2/v2/userinfo").json()
+
+    email = user_info.get("email")
+    name = user_info.get("name")
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        user = User(
+            full_name=name,
+            username=email,
+            email=email,
+            password_hash=""
+        )
+        db.session.add(user)
+        db.session.commit()
+
+    session["user_id"] = user.id
+    return redirect(url_for("home"))
+
 
 @app.route("/plans")
 def plans():
