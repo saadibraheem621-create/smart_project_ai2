@@ -80,17 +80,8 @@ class User(db.Model):
     products = db.relationship("Product", backref="seller", lazy=True)
 
 
-class DataAnalysisFile(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(300))
-    rows_count = db.Column(db.Integer)
-    columns_count = db.Column(db.Integer)
-    columns_names = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
-    
 class AnalysisJob(db.Model):
-    id=db.column(db.integer,primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
     plan = db.Column(db.String(50))
     filename = db.Column(db.String(255))
