@@ -653,6 +653,34 @@ def my_products():
         "my_products.html",
         products=products
     )
+@app.route("/book-translation")
+def book_translation():
+    return render_template("book_translation.html")
+
+@app.route("/translate-book", methods=["POST"])
+def translate_book():
+
+    if "book_file" not in request.files:
+        return "No file uploaded"
+
+    file = request.files["book_file"]
+
+    if file.filename == "":
+        return "Empty filename"
+
+    os.makedirs("uploads/books", exist_ok=True)
+
+    filename = secure_filename(file.filename)
+
+    file_path = os.path.join("uploads/books", filename)
+
+    file.save(file_path)
+
+    return render_template(
+        "translation_result.html",
+        filename=filename,
+        status="Processing Started"
+    )
 
 
 if __name__ == "__main__":
