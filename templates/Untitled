@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Translation Result</title>
+</head>
+<body>
+    <h1>Book Uploaded Successfully</h1>
+    <p>File: {{ filename }}</p>
+    <p>Status: {{ status }}</p>
+
+    <a href="/book-translation">Translate another book</a>
+</body>
+</html>
