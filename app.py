@@ -14,6 +14,25 @@ import uuid
 
 
 app = Flask(__name__)
+PLAN_LIMITS = {
+    "basic": {
+        "max_mb": 20,
+        "ml": False,
+        "pdf": False,
+    },
+
+    "pro": {
+        "max_mb": 100,
+        "ml": True,
+        "pdf": True,
+    },
+
+    "business": {
+        "max_mb": 500,
+        "ml": True,
+        "pdf": True,
+    }
+}
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "zenvy-secret")
@@ -69,6 +88,16 @@ class DataAnalysisFile(db.Model):
     columns_names = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    
+class AnalysisJob(db.Model):
+    id=db.column(db.integer,primary_key=True)
+    user_id = db.Column(db.Integer)
+    plan = db.Column(db.String(50))
+    filename = db.Column(db.String(255))
+    status = db.Column(db.String(50), default="pending")
+    result_json = db.Column(db.Text)
+    report_pdf = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Product(db.Model):
