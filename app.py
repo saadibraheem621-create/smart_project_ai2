@@ -210,6 +210,10 @@ def expire_old_ads():
 def home():
     return render_template("index.html")
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    return render_template("login.html")
+
 
 @app.route("/plans")
 def plans():
