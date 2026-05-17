@@ -208,7 +208,29 @@ def expire_old_ads():
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+
+    search = request.args.get("search", "")
+    category = request.args.get("category", "")
+
+    products = Product.query.filter_by(is_active=True)
+
+    if search:
+        products = products.filter(
+            Product.title.ilike(f"%{search}%")
+        )
+
+    if category:
+        products = products.filter_by(category=category)
+
+    products = products.all()
+
+    return render_template(
+        "index.html",
+        products=products,
+        search=search,
+        category=category
+    )
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
