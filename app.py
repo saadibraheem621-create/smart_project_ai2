@@ -639,6 +639,11 @@ def ai_video():
     )
 @app.route("/payment/<plan>")
 def payment(plan):
+    ...
+
+@app.route("/payment-success/<plan>")
+def payment_success(plan):
+    ...
 
     prices = {
         "starter": 50,
