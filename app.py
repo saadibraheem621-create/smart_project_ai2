@@ -643,24 +643,27 @@ def payment(plan):
 
 @app.route("/payment-success/<plan>")
 def payment_success(plan):
-    ...
 
     prices = {
         "starter": 50,
         "pro": 250
     }
-    
 
     credits = prices.get(plan, 0)
-     user.credits += credits
-    db.session.commit()
+
+    if "user_id" in session:
+
+        user = User.query.get(session["user_id"])
+
+        if user:
+            user.credits += credits
+            db.session.commit()
 
     return render_template(
         "payment.html",
         credits=credits,
         plan=plan
     )
-
 
 @app.route("/init-db")
 def init_db():
