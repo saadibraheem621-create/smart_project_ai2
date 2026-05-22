@@ -657,7 +657,7 @@ def payment_success(plan):
 @app.route("/init-db")
 def init_db():
     db.create_all()
-    return "Database initialized successfully"
+    return "Database initialized!"
 
 
 
