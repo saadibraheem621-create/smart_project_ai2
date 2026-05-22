@@ -61,6 +61,19 @@
             </button>
 
         </form>
+        {% if video_url %}
+    <h3>Generated Video</h3>
+
+    <video controls width="100%">
+        <source src="{{ video_url }}" type="video/mp4">
+    </video>
+
+    <br><br>
+
+    <a href="{{ video_url }}" target="_blank">
+        Open Video
+    </a>
+{% endif %}
     </div>
 
 </body>

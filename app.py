@@ -614,7 +614,7 @@ def ai_video():
     if not user:
         return redirect(url_for("login"))
 
-    video_url = None
+    video_url = output[0] if isinstance(output, list) else output
 
     if request.method == "POST":
         if user.credits <= 0:
