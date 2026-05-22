@@ -12,4 +12,5 @@ scikit-learn
 matplotlib
 openpyxl
 scikit-learn
-matplotlib
+matplotlibpip install scikit-learn matplotlib
+replicate

@@ -599,6 +599,61 @@ def payment():
         return redirect(url_for("home"))
 
     return render_template("payment.html")
+@app.route("/ai-video", methods=["GET", "POST"])
+def ai_video():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
+    if request.method == "POST":
+
+        if user.credits <= 0:
+            flash("No credits remaining")
+            return redirect(url_for("plans"))
+
+        prompt = request.form.get("prompt")
+
+        output = replicate.run(
+            "cjwbw/videocrafter",
+            input={
+                "prompt": prompt
+            }
+        )
+
+        video_url = output
+
+        user.credits -= 1
+        db.session.commit()
+
+        return render_template(
+            "ai_video.html",
+            video_url=video_url,
+            credits=user.credits
+        )
+
+    return render_template(
+        "ai_video.html",
+        credits=user.credits
+    )
+@app.route("/payment/<plan>")
+def payment(plan):
+
+    prices = {
+        "starter": 50,
+        "pro": 250
+    }
+    user.credits += credits
+    db.session.commit()
+
+    credits = prices.get(plan, 0)
+
+    return render_template(
+        "payment.html",
+        credits=credits,
+        plan=plan
+    )
 
 
 @app.route("/init-db")
