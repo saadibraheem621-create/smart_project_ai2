@@ -11,6 +11,6 @@ numpy
 scikit-learn
 matplotlib
 openpyxl
-scikit-learn
-matplotlibpip install scikit-learn matplotlib
-replicate
+deep-translator
+pymupdf
+beautifulsoup4
