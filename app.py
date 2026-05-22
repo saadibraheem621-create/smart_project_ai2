@@ -637,8 +637,21 @@ def ai_video():
         "ai_video.html",
         credits=user.credits
     )
-@app.route("/payment/<plan>")
-def payment(plan):
+@app.route("/video-payment/<plan>")
+def video_payment(plan):
+
+    prices = {
+        "starter": 50,
+        "pro": 250
+    }
+
+    credits = prices.get(plan, 0)
+
+    return render_template(
+        "payment.html",
+        credits=credits,
+        plan=plan
+    )
     ...
 
 @app.route("/payment-success/<plan>")
