@@ -649,10 +649,11 @@ def payment_success(plan):
         "starter": 50,
         "pro": 250
     }
-    user.credits += credits
-    db.session.commit()
+    
 
     credits = prices.get(plan, 0)
+     user.credits += credits
+    db.session.commit()
 
     return render_template(
         "payment.html",
