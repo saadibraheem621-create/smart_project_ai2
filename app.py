@@ -637,22 +637,25 @@ def ai_video():
         "ai_video.html",
         credits=user.credits
     )
-@app.route("/video-payment/<plan>")
-def video_payment(plan):
+@app.route("/ai-video", methods=["GET", "POST"])
+def ai_video():
 
-    prices = {
-        "starter": 50,
-        "pro": 250
-    }
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
-    credits = prices.get(plan, 0)
+    user = User.query.get(session["user_id"])
+
+    if not user:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        # كود توليد الفيديو هنا
+        pass
 
     return render_template(
-        "payment.html",
-        credits=credits,
-        plan=plan
+        "ai_video.html",
+        credits=user.credits
     )
-    ...
 
 @app.route("/payment-success/<plan>")
 def payment_success(plan):
