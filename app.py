@@ -11,6 +11,7 @@ from authlib.integrations.flask_client import OAuth
 import replicate
 import requests
 import uuid
+from sqlalchemy import text
 
 
 app = Flask(__name__)
@@ -657,7 +658,20 @@ def payment_success(plan):
 @app.route("/init-db")
 def init_db():
     db.create_all()
-    return "Database initialized!"
+
+    try:
+        db.session.execute(text('ALTER TABLE "user" ADD COLUMN credits INTEGER DEFAULT 3'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    try:
+        db.session.execute(text('ALTER TABLE "user" ADD COLUMN plan VARCHAR(50) DEFAULT \'free\''))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return "Database fixed successfully"
 
 
 
