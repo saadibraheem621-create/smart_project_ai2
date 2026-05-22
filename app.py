@@ -604,31 +604,32 @@ def payment():
     return render_template("payment.html")
 
 
+
 @app.route("/ai-video", methods=["GET", "POST"])
 def ai_video():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
 
-    user = User.query.get(session["user_id"])
-
-    if not user:
-        return redirect(url_for("login"))
-
-    video_url = output[0] if isinstance(output, list) else output
+    user = User.query.first()
 
     if request.method == "POST":
-        if user.credits <= 0:
-            return redirect(url_for("plans"))
 
         prompt = request.form.get("prompt")
 
-        # هنا كود توليد الفيديو
+        if user and user.credits > 0:
+            user.credits -= 1
+            db.session.commit()
 
-        user.credits -= 1
-        db.session.commit()
+        video_url = "https://samplelib.com/lib/preview/mp4/sample-5s.mp4"
 
-    return render_template("ai_video.html", credits=user.credits, video_url=video_url)
-@app.route("/ai-video", methods=["GET", "POST"])
+        return render_template(
+            "ai_video.html",
+            credits=user.credits,
+            video_url=video_url
+        )
+
+    return render_template(
+        "ai_video.html",
+        credits=user.credits
+    )
 
 
 @app.route("/payment-success/<plan>")
