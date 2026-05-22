@@ -75,6 +75,8 @@ class User(db.Model):
     username = db.Column(db.String(120))
     email = db.Column(db.String(120), unique=True)
     password_hash = db.Column(db.String(255))
+    credits = db.Column(db.Integer, default=3)
+    plan = db.Column(db.String(50), default="free")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     products = db.relationship("Product", backref="seller", lazy=True)
