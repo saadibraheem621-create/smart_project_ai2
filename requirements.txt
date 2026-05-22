@@ -8,9 +8,6 @@ requests
 replicate
 pandas
 numpy
-scikit-learn
-matplotlib
 openpyxl
 deep-translator
-pymupdf
-beautifulsoup4
+PyMuPDF
