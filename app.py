@@ -619,28 +619,28 @@ def ai_video():
 
         prompt = request.form.get("prompt")
 
-try:
+    try:
 
-    output = replicate.run(
+        output = replicate.run(
         "bytedance/seedance-1-lite",
         input={
             "prompt": prompt
         }
     )
 
-    print("OUTPUT =", output)
+        print("OUTPUT =", output)
 
-    video_url = str(output)
+        video_url = str(output)
 
-    print("VIDEO URL =", video_url)
+        print("VIDEO URL =", video_url)
 
-    return render_template(
+        return render_template(
         "ai_video.html",
         video_url=video_url
     )
 
-except Exception as e:
-    print("ERROR =", e)
+    except Exception as e:
+        print("ERROR =", e)
     return f"ReplicateError Details: {e}"
 
     
