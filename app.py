@@ -621,40 +621,27 @@ def ai_video():
 
         try:
 
-            output = replicate.run(
-    "bytedance/seedance-1-lite",
-    input={
-        "prompt": prompt
-    }
-)
+    output = replicate.run(
+        "bytedance/seedance-1-lite",
+        input={
+            "prompt": prompt
+        }
+    )
 
-            video_url = output.url() if callable(getattr(output, "url", None)) else str(output)
+    print("OUTPUT =", output)
 
-            if isinstance(output, list):
-                video_url = output[0]
+    video_url = str(output)
 
-            elif isinstance(output, str):
-                video_url = output
+    print("VIDEO URL =", video_url)
 
-            elif hasattr(output, "url"):
-                video_url = output.url
+    return render_template(
+        "ai_video.html",
+        video_url=video_url
+    )
 
-            else:
-                video_url = str(output)
-            print("VIDEO URL =", video_url)
-
-            user.credits -= 1
-            db.session.commit()
-
-            return render_template(
-                "ai_video.html",
-                credits=user.credits,
-                video_url=video_url
-            )
-
-        except Exception as e:
-            print(e)
-            return str(e)
+    except Exception as e:
+        print("ERROR =", e)
+        return f"ReplicateError Details: {e}"
 
     return render_template(
         "ai_video.html",
