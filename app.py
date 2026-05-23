@@ -13,6 +13,7 @@ from authlib.integrations.flask_client import OAuth
 import replicate
 import requests
 from sqlalchemy import text
+from functools import wraps
 
 app = Flask(__name__)
 
@@ -125,6 +126,14 @@ def current_user():
     if "user_id" not in session:
         return None
     return User.query.get(session["user_id"])
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in [
@@ -683,42 +692,48 @@ def payment_success(plan):
 @login_required
 def ai_video():
     user = current_user()
-    
+
     if request.method == "POST":
-        # التحقق من الرصيد
         if user.credits <= 0:
-            flash("رصيدك غير كافٍ! يرجى شحن الرصيد أولاً", "danger")
             return redirect(url_for("payment"))
-        
+
         prompt = request.form.get("prompt")
-        
-        if not prompt:
-            flash("الرجاء كتابة وصف للفيديو", "danger")
-            return redirect(url_for("ai_video"))
-        
+
         try:
-            # محاولة إنشاء الفيديو
             output = replicate.run(
-                "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+                "bytedance/seedance-1-lite",
                 input={"prompt": prompt}
             )
-            
-            video_url = str(output)
-            
-            # خصم الرصيد
+
+            print("OUTPUT =", output)
+
+            if isinstance(output, list):
+                video_url = output[0]
+            elif hasattr(output, "url") and callable(output.url):
+                video_url = output.url()
+            else:
+                video_url = str(output)
+
+            print("VIDEO URL =", video_url)
+
             user.credits -= 1
             db.session.commit()
-            
-            flash(f"تم إنشاء الفيديو بنجاح! رصيدك المتبقي: {user.credits}", "success")
-            return render_template("ai_video.html", credits=user.credits, video_url=video_url)
-            
+
+            return render_template(
+                "ai_video.html",
+                credits=user.credits,
+                video_url=video_url
+            )
+
         except Exception as e:
-            print("Error:", e)
-            flash("عذراً، حدث خطأ في إنشاء الفيديو. حاول مرة أخرى لاحقاً.", "danger")
-            return redirect(url_for("ai_video"))
-    
-    # طريقة GET
-    return render_template("ai_video.html", credits=user.credits, video_url=None)
+            print("ERROR =", e)
+            return f"ReplicateError Details: {e}"
+
+    return render_template(
+        "ai_video.html",
+        credits=user.credits,
+        video_url=None
+    )
 
 @app.route("/test-replicate")
 def test_replicate():
