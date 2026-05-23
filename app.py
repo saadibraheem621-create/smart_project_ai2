@@ -628,7 +628,7 @@ def ai_video():
             }
         )
 
-        video_url = output.url() if hasattr(output, "url") else str(output)
+        video_url = output.url if hasattr(output, "url") else str(output)
 
         return render_template(
             "ai_video.html",
