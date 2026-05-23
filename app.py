@@ -643,6 +643,7 @@ def ai_video():
 
             else:
                 video_url = str(output)
+            print("VIDEO URL =", video_url)
 
             user.credits -= 1
             db.session.commit()
