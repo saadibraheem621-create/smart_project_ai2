@@ -622,15 +622,13 @@ def ai_video():
         try:
 
             output = replicate.run(
-                "cjwbw/videocrafter",
-                input={
-                    "prompt": prompt
-                }
-            )
+    "bytedance/seedance-1-lite",
+    input={
+        "prompt": prompt
+    }
+)
 
-            print(output)
-
-            video_url = None
+            video_url = output.url() if callable(getattr(output, "url", None)) else str(output)
 
             if isinstance(output, list):
                 video_url = output[0]
