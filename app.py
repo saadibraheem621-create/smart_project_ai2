@@ -680,53 +680,58 @@ def payment_success(plan):
 
 # AI Video Route
 @app.route("/ai-video", methods=["GET", "POST"])
+@login_required
 def ai_video():
-    if "user_id" not in session:
-        flash("يرجى تسجيل الدخول أولاً")
-        return redirect(url_for("login"))
-    
-    user = User.query.get(session["user_id"])
+    user = current_user()
     
     if request.method == "POST":
+        # التحقق من الرصيد
         if user.credits <= 0:
-            flash("لا يوجد رصيد كافي. يرجى شحن الرصيد")
+            flash("رصيدك غير كافٍ! يرجى شحن الرصيد أولاً", "danger")
             return redirect(url_for("payment"))
         
         prompt = request.form.get("prompt")
         
         if not prompt:
-            flash("الرجاء إدخال وصف الفيديو")
+            flash("الرجاء كتابة وصف للفيديو", "danger")
             return redirect(url_for("ai_video"))
         
         try:
+            # محاولة إنشاء الفيديو
             output = replicate.run(
-                "bytedance/seedance-1-lite",
+                "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
                 input={"prompt": prompt}
             )
             
             video_url = str(output)
             
+            # خصم الرصيد
             user.credits -= 1
             db.session.commit()
             
-            flash(f"تم إنشاء الفيديو بنجاح! الرصيد المتبقي: {user.credits}")
-            return render_template(
-                "ai_video.html",
-                credits=user.credits,
-                video_url=video_url
-            )
-        
+            flash(f"تم إنشاء الفيديو بنجاح! رصيدك المتبقي: {user.credits}", "success")
+            return render_template("ai_video.html", credits=user.credits, video_url=video_url)
+            
         except Exception as e:
-            print(f"ERROR: {e}")
-            flash(f"حدث خطأ في إنشاء الفيديو: {str(e)}")
+            print("Error:", e)
+            flash("عذراً، حدث خطأ في إنشاء الفيديو. حاول مرة أخرى لاحقاً.", "danger")
             return redirect(url_for("ai_video"))
     
-    return render_template(
-        "ai_video.html",
-        credits=user.credits,
-        video_url=None
-    )
+    # طريقة GET
+    return render_template("ai_video.html", credits=user.credits, video_url=None)
 
+@app.route("/test-replicate")
+def test_replicate():
+    try:
+        import replicate
+        token = os.environ.get("REPLICATE_API_TOKEN", "غير موجود")
+        return f"""
+        <h1>اختبار Replicate</h1>
+        <p>المكتبة: تم تحميلها بنجاح</p>
+        <p>API Token: {'موجود ✅' if token != 'غير موجود' else 'غير موجود ❌'}</p>
+        """
+    except Exception as e:
+        return f"خطأ: {str(e)}"
 # Book Translation Route
 @app.route("/book-translation")
 def book_translation():
