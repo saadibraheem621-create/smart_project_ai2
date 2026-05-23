@@ -726,8 +726,9 @@ def ai_video():
             )
 
         except Exception as e:
-            print("ERROR =", e)
-            return f"ReplicateError Details: {e}"
+            import traceback
+    traceback.print_exc()
+    return f"ReplicateError Details: {e}"
 
     return render_template(
         "ai_video.html",
