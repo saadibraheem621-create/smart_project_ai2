@@ -643,11 +643,8 @@ def ai_video():
         print("ERROR =", e)
         return f"ReplicateError Details: {e}"
 
-    return render_template(
-        "ai_video.html",
-        credits=user.credits
-    )
-
+    
+    
 @app.route("/add-credits")
 def add_credits():
     user = User.query.first()
