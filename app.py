@@ -618,12 +618,17 @@ def ai_video():
             user.credits -= 1
             db.session.commit()
 
-        video_url = output = replicate.run(
-    "anotherjesse/zeroscope-v2-xl",
-    input={"prompt": prompt}
-)
+        output = replicate.run(
+            "bytedance/seedance-1-lite",
+            input={
+                "prompt": prompt,
+                "duration": 5,
+                "resolution": "480p",
+                "aspect_ratio": "16:9"
+            }
+        )
 
-        video_url = output[0] if isinstance(output, list) else output
+        video_url = output.url() if hasattr(output, "url") else str(output)
 
         return render_template(
             "ai_video.html",
