@@ -618,7 +618,12 @@ def ai_video():
             user.credits -= 1
             db.session.commit()
 
-        video_url = "https://samplelib.com/lib/preview/mp4/sample-5s.mp4"
+        video_url = output = replicate.run(
+    "anotherjesse/zeroscope-v2-xl",
+    input={"prompt": prompt}
+)
+
+        video_url = output[0] if isinstance(output, list) else output
 
         return render_template(
             "ai_video.html",
