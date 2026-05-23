@@ -689,30 +689,31 @@ def payment_success(plan):
 
 # AI Video Route
 @app.route("/ai-video", methods=["GET", "POST"])
-@login_required
 def ai_video():
+
     user = current_user()
 
+    if not user:
+        return redirect(url_for("login"))
+
     if request.method == "POST":
-        if user.credits <= 0:
-            return redirect(url_for("payment"))
 
         prompt = request.form.get("prompt")
 
         try:
+
+            print("PROMPT =", prompt)
+
             output = replicate.run(
                 "bytedance/seedance-1-lite",
-                input={"prompt": prompt}
+                input={
+                    "prompt": prompt
+                }
             )
 
             print("OUTPUT =", output)
 
-            if isinstance(output, list):
-                video_url = output[0]
-            elif hasattr(output, "url") and callable(output.url):
-                video_url = output.url()
-            else:
-                video_url = str(output)
+            video_url = str(output)
 
             print("VIDEO URL =", video_url)
 
@@ -726,16 +727,20 @@ def ai_video():
             )
 
         except Exception as e:
+
             import traceback
-    traceback.print_exc()
-    return f"ReplicateError Details: {e}"
+            traceback.print_exc()
+
+            return f"""
+            <h1>ERROR</h1>
+            <pre>{str(e)}</pre>
+            """
 
     return render_template(
         "ai_video.html",
         credits=user.credits,
         video_url=None
     )
-
 @app.route("/test-replicate")
 def test_replicate():
     try:
