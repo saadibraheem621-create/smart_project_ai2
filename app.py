@@ -661,6 +661,13 @@ def ai_video():
         "ai_video.html",
         credits=user.credits
     )
+
+@app.route("/add-credits")
+def add_credits():
+    user = User.query.first()
+    user.credits = 10
+    db.session.commit()
+    return "Credits added"
 @app.route("/payment-success/<plan>")
 def payment_success(plan):
 
