@@ -605,6 +605,8 @@ def payment():
 
 
 
+import replicate
+
 @app.route("/ai-video", methods=["GET", "POST"])
 def ai_video():
 
@@ -612,36 +614,53 @@ def ai_video():
 
     if request.method == "POST":
 
+        if user.credits <= 0:
+            return "No credits left"
+
         prompt = request.form.get("prompt")
 
-        if user and user.credits > 0:
+        try:
+
+            output = replicate.run(
+                "cjwbw/videocrafter",
+                input={
+                    "prompt": prompt
+                }
+            )
+
+            print(output)
+
+            video_url = None
+
+            if isinstance(output, list):
+                video_url = output[0]
+
+            elif isinstance(output, str):
+                video_url = output
+
+            elif hasattr(output, "url"):
+                video_url = output.url
+
+            else:
+                video_url = str(output)
+
             user.credits -= 1
             db.session.commit()
 
-        output = replicate.run(
-            "bytedance/seedance-1-lite",
-            input={
-                "prompt": prompt,
-                "duration": 5,
-                "resolution": "480p",
-                "aspect_ratio": "16:9"
-            }
-        )
+            return render_template(
+                "ai_video.html",
+                credits=user.credits,
+                video_url=video_url
+            )
 
-        video_url = output.url if hasattr(output, "url") else str(output)
-
-        return render_template(
-            "ai_video.html",
-            credits=user.credits,
-            video_url=video_url
-        )
+        except Exception as e:
+            print(e)
+            return str(e)
 
     return render_template(
         "ai_video.html",
         credits=user.credits
     )
-
-
 @app.route("/payment-success/<plan>")
 def payment_success(plan):
 
