@@ -605,44 +605,45 @@ def payment():
 
 
 
-import replicate
-
 @app.route("/ai-video", methods=["GET", "POST"])
 def ai_video():
-
     user = User.query.first()
 
     if request.method == "POST":
-
         if user.credits <= 0:
             return "No credits left"
 
         prompt = request.form.get("prompt")
 
-    try:
+        try:
+            output = replicate.run(
+                "bytedance/seedance-1-lite",
+                input={"prompt": prompt}
+            )
 
-        output = replicate.run(
-        "bytedance/seedance-1-lite",
-        input={
-            "prompt": prompt
-        }
-    )
+            print("OUTPUT =", output)
 
-        print("OUTPUT =", output)
+            video_url = str(output)
+            print("VIDEO URL =", video_url)
 
-        video_url = str(output)
+            user.credits -= 1
+            db.session.commit()
 
-        print("VIDEO URL =", video_url)
+            return render_template(
+                "ai_video.html",
+                credits=user.credits,
+                video_url=video_url
+            )
 
-        return render_template(
+        except Exception as e:
+            print("ERROR =", e)
+            return f"ReplicateError Details: {e}"
+
+    return render_template(
         "ai_video.html",
-        video_url=video_url
+        credits=user.credits,
+        video_url=None
     )
-
-    except Exception as e:
-        print("ERROR =", e)
-    return f"ReplicateError Details: {e}"
-
     
     
 @app.route("/add-credits")
