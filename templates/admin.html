@@ -84,7 +84,7 @@
         <tr>
             <td>
                 {% if p.image_name %}
-                <img class="admin-img" src="/static/uploads/{{ p.image_name }}">
+                <img src="{{ url_for('uploaded_file', filename=product.image_name) }}">
                 {% else %}
                 No image
                 {% endif %}
