@@ -6,7 +6,7 @@ import uuid
 import html
 from werkzeug.utils import secure_filename
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from authlib.integrations.flask_client import OAuth
@@ -38,7 +38,7 @@ PLAN_LIMITS = {
 
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "zenvy-secret-key-change-in-production")
-app.config["UPLOAD_FOLDER"] = "static/uploads"
+app.config["UPLOAD_FOLDER"] = "/tmp/uploads"
 app.config["BOOK_UPLOAD_FOLDER"] = "uploads/books"
 
 # Database configuration
@@ -554,6 +554,10 @@ def generate_product_image(product_id):
         flash("حدث خطأ في إنشاء الصورة")
     
     return redirect(url_for("my_products"))
+
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 # Admin Routes
 @app.route("/admin", methods=["GET", "POST"])
