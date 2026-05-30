@@ -21,7 +21,7 @@
     {% for p in featured_products %}
     <div class="sponsored-card">
 
-        <img src="{{ url_for('static', filename='uploads/' + p.image_name) }}">
+        <img src="{{ url_for('uploaded_file', filename=product.image_name) }}">
 
         <h3>{{ p.title }}</h3>
 
@@ -105,7 +105,7 @@
             <div class="image-box">
 
                 {% if product.image_name %}
-                <img src="/static/uploads/{{ product.image_name }}">
+                <img src="{{ url_for('uploaded_file', filename=product.image_name) }}">
                 {% endif %}
 
             </div>
@@ -151,7 +151,7 @@
 
             <div class="image-box">
                 {% if product.image_name %}
-                <img src="/static/uploads/{{ product.image_name }}">
+                <img src="{{ url_for('uploaded_file', filename=product.image_name) }}">
                 {% else %}
                 <div class="no-image">No Image</div>
                 {% endif %}
